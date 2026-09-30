@@ -196,26 +196,35 @@ describe('Slack failure still returns 201', () => {
 });
 
 describe('buildSlackMessage', () => {
-  it('uses mention when env has member id', () => {
+  it('uses plain @name mention with party size', () => {
     const text = buildSlackMessage({
       staffName: '野坂',
       partySize: 2,
       acceptedAt: '2026-03-15T04:05:00.000Z',
-      env: { SLACK_MENTION_NOSAKA: 'U123ABC' },
     });
     assert.match(text, /株式会社ライトパス 総合受付/);
-    assert.match(text, /<@U123ABC> さん、お客様が 2名 お見えです。/);
+    assert.match(text, /@野坂 さん、お客様が 2名 お見えです。/);
     assert.match(text, /担当: 野坂/);
+    assert.match(text, /人数: 2名/);
     assert.match(text, /受付時刻: /);
   });
 
-  it('falls back to staff name when mention missing', () => {
+  it('labels party size 6 as 6名～', () => {
     const text = buildSlackMessage({
-      staffName: '野坂',
-      partySize: 1,
+      staffName: '合田',
+      partySize: 6,
       acceptedAt: '2026-03-15T04:05:00.000Z',
-      env: {},
     });
-    assert.match(text, /野坂 さん、お客様が 1名 お見えです。/);
+    assert.match(text, /@合田 さん、お客様が 6名～ お見えです。/);
+    assert.match(text, /人数: 6名～/);
+  });
+
+  it('sends fired message for 中原', () => {
+    const text = buildSlackMessage({
+      staffName: '中原',
+      partySize: 3,
+      acceptedAt: '2026-03-15T04:05:00.000Z',
+    });
+    assert.equal(text, 'お前はクビだ！\n@中原 3名');
   });
 });

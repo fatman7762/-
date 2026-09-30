@@ -104,30 +104,29 @@ docker run --rm -p 8081:8081 -v reception-data:/app/data --env-file .env lightpa
 |------|------|
 | `PORT` | API ポート（既定 `8081`） |
 | `RECEPTIONS_FILE` | 受付データの JSON パス |
-| `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL |
-| `SLACK_MENTION_NOSAKA` | 野坂さんの Slack メンバー ID（例: `U0123...`） |
-| `SLACK_MENTION_ITO` | 伊藤 |
-| `SLACK_MENTION_YANASE` | 梁瀬 |
-| `SLACK_MENTION_NAKAHARA` | 中原 |
-| `SLACK_MENTION_SAKAMOTO` | 坂本 |
-| `SLACK_MENTION_AIDA` | 合田 |
-
-メンション ID が無い場合は「野坂 さん、…」のように氏名で通知します。`その他` にはメンション用変数はありません。
+| `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL（テスト用 Slack でも可） |
 
 ### Slack Incoming Webhook の設定
 
 1. Slack ワークスペースで Incoming Webhooks を有効化
 2. 通知先チャンネルを選び Webhook URL を発行
-3. `.env` の `SLACK_WEBHOOK_URL` に設定
-4. 必要なら各担当のメンバー ID を `SLACK_MENTION_*` に設定
+3. `api/.env` の `SLACK_WEBHOOK_URL` に設定して API を再起動
 
-通知文例:
+通知文例（メンションは `@氏名` の文字のみ。Slack メンバー ID は使いません）:
 
 ```
 株式会社ライトパス 総合受付
-<@U...> さん、お客様が 2名 お見えです。
+@野坂 さん、お客様が 2名 お見えです。
 担当: 野坂
+人数: 2名
 受付時刻: 2026-09-30 10:15
+```
+
+中原のとき:
+
+```
+お前はクビだ！
+@中原 2名
 ```
 
 ## Android アプリ

@@ -1,5 +1,3 @@
-import { STAFF_MENTION_ENV } from './staff.js';
-
 /**
  * Format acceptedAt ISO → YYYY-MM-DD HH:mm (local)
  * @param {string} iso
@@ -17,25 +15,30 @@ export function formatAcceptedAt(iso) {
 
 /**
  * Build Slack notification text in Japanese.
- * @param {{ staffName: string, partySize: number, acceptedAt: string, env?: NodeJS.ProcessEnv }} opts
+ * Mentions use plain "@氏名" (not Slack member IDs).
+ * 中原はギャグ用に専用メッセージ。
+ * @param {{ staffName: string, partySize: number, acceptedAt: string }} opts
  * @returns {string}
  */
-export function buildSlackMessage({ staffName, partySize, acceptedAt, env = process.env }) {
-  const mentionKey = STAFF_MENTION_ENV[staffName];
-  const memberId = mentionKey ? env[mentionKey]?.trim() : '';
-  const who = memberId ? `<@${memberId}>` : staffName;
+export function buildSlackMessage({ staffName, partySize, acceptedAt }) {
+  if (staffName === '中原') {
+    return [`お前はクビだ！`, `@中原 ${partySize}名`].join('\n');
+  }
+
+  const sizeLabel = partySize >= 6 ? '6名～' : `${partySize}名`;
 
   return [
     '株式会社ライトパス 総合受付',
-    `${who} さん、お客様が ${partySize}名 お見えです。`,
+    `@${staffName} さん、お客様が ${sizeLabel} お見えです。`,
     `担当: ${staffName}`,
+    `人数: ${sizeLabel}`,
     `受付時刻: ${formatAcceptedAt(acceptedAt)}`,
   ].join('\n');
 }
 
 /**
  * Post to Slack Incoming Webhook. Returns true on success.
- * @param {{ staffName: string, partySize: number, acceptedAt: string, webhookUrl?: string, env?: NodeJS.ProcessEnv, fetchImpl?: typeof fetch }} opts
+ * @param {{ staffName: string, partySize: number, acceptedAt: string, webhookUrl?: string, fetchImpl?: typeof fetch }} opts
  * @returns {Promise<boolean>}
  */
 export async function notifySlack({
@@ -43,7 +46,6 @@ export async function notifySlack({
   partySize,
   acceptedAt,
   webhookUrl = process.env.SLACK_WEBHOOK_URL,
-  env = process.env,
   fetchImpl = fetch,
 }) {
   const url = webhookUrl?.trim();
@@ -51,7 +53,7 @@ export async function notifySlack({
     return false;
   }
 
-  const text = buildSlackMessage({ staffName, partySize, acceptedAt, env });
+  const text = buildSlackMessage({ staffName, partySize, acceptedAt });
 
   try {
     const res = await fetchImpl(url, {
