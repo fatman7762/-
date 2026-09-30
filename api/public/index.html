@@ -393,7 +393,7 @@
     const chimeAudios = {
       "": { audio: new Audio("/intercom.mp3"), fallback: "/intercom.wav" },
       kubi: { audio: new Audio("/explosion.mp3"), fallback: "/explosion.wav" },
-      okaeri: { audio: new Audio("/sparkle.mp3"), fallback: "/sparkle.wav" },
+      okaeri: { audio: new Audio("/applause.mp3"), fallback: "/applause.wav" },
     };
     Object.values(chimeAudios).forEach(({ audio }) => { audio.preload = "auto"; });
     // Unlock audio on first tap (browser autoplay policy)

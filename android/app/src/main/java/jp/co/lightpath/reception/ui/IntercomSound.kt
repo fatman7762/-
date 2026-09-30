@@ -15,7 +15,7 @@ enum class ReceptionChime {
  * Reception success chimes.
  * Default: Intercom01 Ding Dong Close.
  * Nakahara (クビ): Explosion01 Short.
- * Yanase (おかえりなさい): Onoma-Sparkle03 Short.
+ * Yanase (おかえりなさい): Applause04 Short.
  */
 class IntercomSound(context: Context) {
     private val appContext = context.applicationContext
@@ -31,7 +31,7 @@ class IntercomSound(context: Context) {
 
     private var intercomId: Int = 0
     private var explosionId: Int = 0
-    private var sparkleId: Int = 0
+    private var applauseId: Int = 0
     private val loaded = mutableSetOf<Int>()
 
     init {
@@ -42,13 +42,13 @@ class IntercomSound(context: Context) {
         }
         intercomId = soundPool.load(appContext, R.raw.intercom, 1)
         explosionId = soundPool.load(appContext, R.raw.explosion, 1)
-        sparkleId = soundPool.load(appContext, R.raw.sparkle, 1)
+        applauseId = soundPool.load(appContext, R.raw.applause, 1)
     }
 
     fun play(chime: ReceptionChime = ReceptionChime.Default) {
         val id = when (chime) {
             ReceptionChime.Nakahara -> explosionId
-            ReceptionChime.Yanase -> sparkleId
+            ReceptionChime.Yanase -> applauseId
             ReceptionChime.Default -> intercomId
         }
         if (id == 0 || id !in loaded) return
