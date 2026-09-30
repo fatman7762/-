@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ライトパス受付テスト</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --primary: #1565c0;
+      --on-primary: #fff;
+      --tonal: #d7e3f4;
+      --on-tonal: #0d2137;
+      --success: #2e7d32;
+      --error: #c62828;
+      --gap: 12px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+    }
+    #app {
+      height: 100%;
+      padding: 12px;
+      display: flex;
+      gap: var(--gap);
+    }
+    #app.portrait { flex-direction: column; }
+    #app.landscape { flex-direction: row; }
+    .staff {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(4, 1fr);
+      gap: 10px;
+      min-height: 0;
+    }
+    .party {
+      display: flex;
+      gap: 8px;
+      min-height: 0;
+    }
+    #app.portrait .party {
+      height: 18%;
+      flex-direction: row;
+    }
+    #app.landscape .party {
+      width: 22%;
+      flex-direction: column;
+    }
+    button.choice {
+      border: 0;
+      border-radius: 14px;
+      font-size: clamp(1.1rem, 3.5vw, 1.75rem);
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--tonal);
+      color: var(--on-tonal);
+      min-width: 0;
+      flex: 1;
+    }
+    button.choice.selected {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    button.choice.success {
+      background: var(--success);
+      color: #fff;
+    }
+    button.choice.error {
+      background: var(--error);
+      color: #fff;
+    }
+    button.choice:disabled { opacity: 0.7; cursor: wait; }
+    .staff .spacer { visibility: hidden; }
+    #log {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      pointer-events: none;
+      font-size: 14px;
+      color: #333;
+      background: rgba(255,255,255,0.92);
+      border-radius: 10px;
+      padding: 8px 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    #log.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="app" class="portrait">
+    <div class="staff" id="staff"></div>
+    <div class="party" id="party"></div>
+  </div>
+  <div id="log"></div>
+  <script>
+    const STAFF = ["野坂", "伊藤", "梁瀬", "中原", "坂本", "合田", "その他"];
+    const SIZES = [1, 2, 3, 4, 5, 6];
+    let selectedStaff = null;
+    let selectedSize = null;
+    let submitting = false;
+
+    const app = document.getElementById("app");
+    const staffEl = document.getElementById("staff");
+    const partyEl = document.getElementById("party");
+    const logEl = document.getElementById("log");
+
+    function layout() {
+      app.className = window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+    }
+    window.addEventListener("resize", layout);
+    layout();
+
+    function showLog(text) {
+      logEl.textContent = text;
+      logEl.classList.add("show");
+      setTimeout(() => logEl.classList.remove("show"), 2500);
+    }
+
+    function render(flash) {
+      staffEl.innerHTML = "";
+      STAFF.forEach((name) => {
+        const b = document.createElement("button");
+        b.className = "choice";
+        b.textContent = name;
+        b.disabled = submitting;
+        if (selectedStaff === name) {
+          b.classList.add("selected");
+          if (flash === "success") b.classList.add("success");
+          if (flash === "error") b.classList.add("error");
+        }
+        b.onclick = () => onStaff(name);
+        staffEl.appendChild(b);
+      });
+      const spacer = document.createElement("div");
+      spacer.className = "spacer";
+      staffEl.appendChild(spacer);
+
+      partyEl.innerHTML = "";
+      SIZES.forEach((n) => {
+        const b = document.createElement("button");
+        b.className = "choice";
+        b.textContent = String(n);
+        b.disabled = submitting;
+        if (selectedSize === n) {
+          b.classList.add("selected");
+          if (flash === "success") b.classList.add("success");
+          if (flash === "error") b.classList.add("error");
+        }
+        b.onclick = () => onSize(n);
+        partyEl.appendChild(b);
+      });
+    }
+
+    async function trySubmit() {
+      if (!selectedStaff || selectedSize == null || submitting) return;
+      submitting = true;
+      render(null);
+      try {
+        const res = await fetch("/receptions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ staffName: selectedStaff, partySize: selectedSize }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || res.statusText);
+        render("success");
+        showLog(`受付完了: ${data.staffName} / ${data.partySize}名`);
+      } catch (e) {
+        render("error");
+        showLog(`失敗: ${e.message}`);
+      }
+      await new Promise((r) => setTimeout(r, 700));
+      selectedStaff = null;
+      selectedSize = null;
+      submitting = false;
+      render(null);
+    }
+
+    function onStaff(name) {
+      selectedStaff = name;
+      render(null);
+      trySubmit();
+    }
+    function onSize(n) {
+      selectedSize = n;
+      render(null);
+      trySubmit();
+    }
+
+    render(null);
+  </script>
+</body>
+</html>

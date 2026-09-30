@@ -1,8 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { isValidPartySize, isValidStaffName } from './staff.js';
 import { createReception, listTodaysReceptions } from './store.js';
 import { notifySlack } from './slack.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const publicDir = join(__dirname, '../public');
 
 /**
  * @param {{ notify?: typeof notifySlack }} [deps]
@@ -13,6 +18,7 @@ export function createApp(deps = {}) {
 
   app.use(cors());
   app.use(express.json());
+  app.use(express.static(publicDir));
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });

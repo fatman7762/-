@@ -6,6 +6,7 @@ COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
 
 COPY src ./src
+COPY public ./public
 
 ENV PORT=8081
 ENV RECEPTIONS_FILE=/app/data/receptions.json
