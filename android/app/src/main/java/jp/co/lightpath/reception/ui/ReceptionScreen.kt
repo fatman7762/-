@@ -49,7 +49,7 @@ private val STAFF = listOf(
     StaffOption("野坂", "Nosaka"),
     StaffOption("伊藤", "Ito"),
     StaffOption("梁瀬", "Yanase"),
-    StaffOption("中原", "Nakahara"),
+    StaffOption("中原", "fired"),
     StaffOption("坂本", "Sakamoto"),
     StaffOption("合田", "Aida"),
     StaffOption("その他", "Other"),
