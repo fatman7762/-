@@ -227,4 +227,13 @@ describe('buildSlackMessage', () => {
     });
     assert.equal(text, 'お前はクビだ！\n@中原 3名');
   });
+
+  it('sends welcome message for 梁瀬', () => {
+    const text = buildSlackMessage({
+      staffName: '梁瀬',
+      partySize: 2,
+      acceptedAt: '2026-03-15T04:05:00.000Z',
+    });
+    assert.equal(text, 'おかえり\n@梁瀬 2名');
+  });
 });

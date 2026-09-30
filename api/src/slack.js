@@ -16,13 +16,16 @@ export function formatAcceptedAt(iso) {
 /**
  * Build Slack notification text in Japanese.
  * Mentions use plain "@氏名" (not Slack member IDs).
- * 中原はギャグ用に専用メッセージ。
+ * 中原・梁瀬はギャグ用に専用メッセージ。
  * @param {{ staffName: string, partySize: number, acceptedAt: string }} opts
  * @returns {string}
  */
 export function buildSlackMessage({ staffName, partySize, acceptedAt }) {
   if (staffName === '中原') {
     return [`お前はクビだ！`, `@中原 ${partySize}名`].join('\n');
+  }
+  if (staffName === '梁瀬') {
+    return [`おかえり`, `@梁瀬 ${partySize}名`].join('\n');
   }
 
   const sizeLabel = partySize >= 6 ? '6名～' : `${partySize}名`;

@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -65,6 +66,11 @@ private val PARTY_SIZES = (1..6).toList()
 private fun partyLabel(size: Int): String = if (size >= 6) "6～" else size.toString()
 
 private enum class FlashKind { None, Success, Error }
+
+private enum class SpecialSelect { None, Fired, Welcome }
+
+private val WelcomeYellow = Color(0xFFF9A825)
+private val OnWelcomeYellow = Color(0xFF212121)
 
 private val TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 private val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("M/d (E)", java.util.Locale.JAPANESE)
@@ -231,15 +237,24 @@ private fun StaffGrid(
             ) {
                 rowItems.forEach { staff ->
                     val isSelected = selected == staff.name
-                    // 中原だけ選んだときは赤く「クビ」表示（ギャグ）
-                    val showKubi = staff.name == "中原" && isSelected && flash == FlashKind.None
+                    val special = when {
+                        !isSelected || flash != FlashKind.None -> SpecialSelect.None
+                        staff.name == "中原" -> SpecialSelect.Fired
+                        staff.name == "梁瀬" -> SpecialSelect.Welcome
+                        else -> SpecialSelect.None
+                    }
+                    val (label, subtitle) = when (special) {
+                        SpecialSelect.Fired -> "クビ" to "中原"
+                        SpecialSelect.Welcome -> "おかえり" to "梁瀬"
+                        SpecialSelect.None -> staff.name to staff.romaji
+                    }
                     ChoiceButton(
-                        label = if (showKubi) "クビ" else staff.name,
-                        subtitle = if (showKubi) "中原" else staff.romaji,
+                        label = label,
+                        subtitle = subtitle,
                         selected = isSelected,
                         flash = flash,
                         enabled = enabled,
-                        dangerSelected = showKubi,
+                        specialSelect = special,
                         labelSize = scale.staffName,
                         subtitleSize = scale.staffRomaji,
                         modifier = Modifier
@@ -392,7 +407,7 @@ private fun ChoiceButton(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     subtitleSize: TextUnit = 14.sp,
-    dangerSelected: Boolean = false,
+    specialSelect: SpecialSelect = SpecialSelect.None,
     onClick: () -> Unit,
 ) {
     val labelStyle = MaterialTheme.typography.headlineMedium.copy(
@@ -440,11 +455,17 @@ private fun ChoiceButton(
                 disabledContainerColor = MaterialTheme.colorScheme.tertiary,
                 disabledContentColor = MaterialTheme.colorScheme.onTertiary,
             )
-            flash == FlashKind.Error || dangerSelected -> ButtonDefaults.buttonColors(
+            flash == FlashKind.Error || specialSelect == SpecialSelect.Fired -> ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.error,
                 contentColor = MaterialTheme.colorScheme.onError,
                 disabledContainerColor = MaterialTheme.colorScheme.error,
                 disabledContentColor = MaterialTheme.colorScheme.onError,
+            )
+            specialSelect == SpecialSelect.Welcome -> ButtonDefaults.buttonColors(
+                containerColor = WelcomeYellow,
+                contentColor = OnWelcomeYellow,
+                disabledContainerColor = WelcomeYellow,
+                disabledContentColor = OnWelcomeYellow,
             )
             else -> ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,

@@ -98,6 +98,10 @@
       background: var(--error);
       color: #fff;
     }
+    button.choice.selected.okaeri {
+      background: #f9a825;
+      color: #212121;
+    }
     button.choice.success {
       background: var(--success);
       color: #fff;
@@ -251,14 +255,25 @@
         const b = document.createElement("button");
         b.className = "choice staff";
         b.type = "button";
-        const showKubi = name === "中原" && selectedStaff === name && !flash;
-        const title = showKubi ? "クビ" : name;
-        const sub = showKubi ? "中原" : romaji;
+        let title = name;
+        let sub = romaji;
+        let specialClass = "";
+        if (selectedStaff === name && !flash) {
+          if (name === "中原") {
+            title = "クビ";
+            sub = "中原";
+            specialClass = "kubi";
+          } else if (name === "梁瀬") {
+            title = "おかえり";
+            sub = "梁瀬";
+            specialClass = "okaeri";
+          }
+        }
         b.innerHTML = `<span>${title}</span><span class="romaji">${sub}</span>`;
         b.disabled = submitting;
         if (selectedStaff === name) {
           b.classList.add("selected");
-          if (showKubi) b.classList.add("kubi");
+          if (specialClass) b.classList.add(specialClass);
           if (flash === "success") b.classList.add("success");
           if (flash === "error") b.classList.add("error");
         }
