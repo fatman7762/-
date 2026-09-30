@@ -391,24 +391,31 @@
     };
 
     const intercomAudio = new Audio("/intercom.mp3");
+    const explosionAudio = new Audio("/explosion.mp3");
     intercomAudio.preload = "auto";
+    explosionAudio.preload = "auto";
     // Unlock audio on first tap (browser autoplay policy)
-    function unlockIntercom() {
-      intercomAudio.play().then(() => {
-        intercomAudio.pause();
-        intercomAudio.currentTime = 0;
+    function unlockAudio(audio) {
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
       }).catch(() => {});
+    }
+    function unlockIntercom() {
+      unlockAudio(intercomAudio);
+      unlockAudio(explosionAudio);
       document.removeEventListener("pointerdown", unlockIntercom);
     }
     document.addEventListener("pointerdown", unlockIntercom, { once: true });
-    function playIntercom() {
+    function playChime(kind) {
+      const audio = kind === "kubi" ? explosionAudio : intercomAudio;
+      const fallback = kind === "kubi" ? "/explosion.wav" : "/intercom.wav";
       try {
-        intercomAudio.currentTime = 0;
-        const p = intercomAudio.play();
+        audio.currentTime = 0;
+        const p = audio.play();
         if (p && p.catch) p.catch(() => {
-          // mp3 failed — try wav fallback once
-          intercomAudio.src = "/intercom.wav";
-          intercomAudio.play().catch(() => {});
+          audio.src = fallback;
+          audio.play().catch(() => {});
         });
       } catch (_) {}
     }
@@ -435,7 +442,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || res.statusText);
-        playIntercom();
+        playChime(selectedStaffSpecial());
         render("success");
         showLog(`受付完了: ${data.staffName} / ${data.partySize}名`);
       } catch (e) {

@@ -6,7 +6,9 @@ import android.media.SoundPool
 import jp.co.lightpath.reception.R
 
 /**
- * Plays Intercom01 Ding Dong Close on successful reception.
+ * Reception success chimes.
+ * Default: Intercom01 Ding Dong Close.
+ * Nakahara (クビ): Explosion01 Short.
  */
 class IntercomSound(context: Context) {
     private val appContext = context.applicationContext
@@ -20,21 +22,24 @@ class IntercomSound(context: Context) {
         )
         .build()
 
-    private var soundId: Int = 0
-    private var loaded: Boolean = false
+    private var intercomId: Int = 0
+    private var explosionId: Int = 0
+    private val loaded = mutableSetOf<Int>()
 
     init {
         soundPool.setOnLoadCompleteListener { _, sampleId, status ->
-            if (status == 0 && sampleId == soundId) {
-                loaded = true
+            if (status == 0) {
+                loaded += sampleId
             }
         }
-        soundId = soundPool.load(appContext, R.raw.intercom, 1)
+        intercomId = soundPool.load(appContext, R.raw.intercom, 1)
+        explosionId = soundPool.load(appContext, R.raw.explosion, 1)
     }
 
-    fun play() {
-        if (!loaded || soundId == 0) return
-        soundPool.play(soundId, 1f, 1f, 1, 0, 1f)
+    fun play(nakahara: Boolean = false) {
+        val id = if (nakahara) explosionId else intercomId
+        if (id == 0 || id !in loaded) return
+        soundPool.play(id, 1f, 1f, 1, 0, 1f)
     }
 
     fun release() {
