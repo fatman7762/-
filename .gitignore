@@ -18,6 +18,7 @@ Thumbs.db
 node_modules/
 api/node_modules/
 api/coverage/
+api/data/
 npm-debug.log*
 yarn-error.log*
 

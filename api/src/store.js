@@ -1,23 +1,59 @@
 import { randomUUID } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 
 /** @typedef {{ id: string, staffName: string, partySize: number, acceptedAt: string, notified: boolean }} Reception */
 
-/** @type {Reception[]} */
-const receptions = [];
+/**
+ * @returns {string}
+ */
+function dataFilePath() {
+  return resolve(process.env.RECEPTIONS_FILE || 'data/receptions.json');
+}
 
 /**
- * @param {{ staffName: string, partySize: number, notified: boolean }} input
+ * @returns {Reception[]}
+ */
+function loadFromDisk() {
+  const file = dataFilePath();
+  if (!existsSync(file)) {
+    return [];
+  }
+  try {
+    const raw = readFileSync(file, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * @param {Reception[]} items
+ */
+function saveToDisk(items) {
+  const file = dataFilePath();
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, JSON.stringify(items, null, 2), 'utf8');
+}
+
+/** @type {Reception[]} */
+let receptions = loadFromDisk();
+
+/**
+ * @param {{ staffName: string, partySize: number, notified: boolean, acceptedAt?: string }} input
  * @returns {Reception}
  */
-export function createReception({ staffName, partySize, notified }) {
+export function createReception({ staffName, partySize, notified, acceptedAt }) {
   const reception = {
     id: randomUUID(),
     staffName,
     partySize,
-    acceptedAt: new Date().toISOString(),
+    acceptedAt: acceptedAt ?? new Date().toISOString(),
     notified,
   };
   receptions.push(reception);
+  saveToDisk(receptions);
   return reception;
 }
 
@@ -38,7 +74,13 @@ export function listTodaysReceptions(now = new Date()) {
   });
 }
 
-/** Test helper */
+/** Reload from disk (startup / tests). */
+export function reloadReceptions() {
+  receptions = loadFromDisk();
+}
+
+/** Test helper — clears memory and the data file. */
 export function clearReceptions() {
-  receptions.length = 0;
+  receptions = [];
+  saveToDisk(receptions);
 }

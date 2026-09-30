@@ -1,9 +1,20 @@
-import { describe, it, beforeEach, mock } from 'node:test';
+import { describe, it, beforeEach, after, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createApp } from '../src/app.js';
-import { clearReceptions } from '../src/store.js';
+import { clearReceptions, reloadReceptions } from '../src/store.js';
 import { buildSlackMessage, notifySlack } from '../src/slack.js';
 import { STAFF_NAMES } from '../src/staff.js';
+
+const tempDir = mkdtempSync(join(tmpdir(), 'reception-api-'));
+process.env.RECEPTIONS_FILE = join(tempDir, 'receptions.json');
+reloadReceptions();
+
+after(() => {
+  rmSync(tempDir, { recursive: true, force: true });
+});
 
 /**
  * @param {import('express').Express} app

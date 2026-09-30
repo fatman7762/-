@@ -58,6 +58,7 @@ export async function notifySlack({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
+      signal: AbortSignal.timeout(5000),
     });
     return res.ok;
   } catch {

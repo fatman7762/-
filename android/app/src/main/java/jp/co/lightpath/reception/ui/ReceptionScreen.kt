@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,9 +28,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import jp.co.lightpath.reception.data.ReceptionApi
+import jp.co.lightpath.reception.data.ReceptionResponse
+import jp.co.lightpath.reception.ui.theme.LightpathReceptionTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -290,6 +294,38 @@ private fun ChoiceButton(
             modifier = modifier,
         ) {
             Text(text = label, style = textStyle)
+        }
+    }
+}
+
+private class PreviewReceptionApi : ReceptionApi("http://127.0.0.1:8081") {
+    override fun createReception(staffName: String, partySize: Int): ReceptionResponse {
+        return ReceptionResponse(
+            id = "preview",
+            staffName = staffName,
+            partySize = partySize,
+            acceptedAt = "2026-09-30T01:00:00.000Z",
+            notified = true,
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 800, heightDp = 1280, name = "縦向き")
+@Composable
+private fun ReceptionPortraitPreview() {
+    LightpathReceptionTheme {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            ReceptionScreen(api = PreviewReceptionApi())
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 1280, heightDp = 800, name = "横向き")
+@Composable
+private fun ReceptionLandscapePreview() {
+    LightpathReceptionTheme {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            ReceptionScreen(api = PreviewReceptionApi())
         }
     }
 }

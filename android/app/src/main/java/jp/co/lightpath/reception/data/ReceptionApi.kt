@@ -15,7 +15,7 @@ data class ReceptionResponse(
     val notified: Boolean,
 )
 
-class ReceptionApi(
+open class ReceptionApi(
     baseUrl: String,
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.SECONDS)
@@ -25,7 +25,7 @@ class ReceptionApi(
 ) {
     private val root = baseUrl.trimEnd('/')
 
-    fun createReception(staffName: String, partySize: Int): ReceptionResponse {
+    open fun createReception(staffName: String, partySize: Int): ReceptionResponse {
         val json = JSONObject()
             .put("staffName", staffName)
             .put("partySize", partySize)

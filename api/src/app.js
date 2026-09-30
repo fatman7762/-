@@ -39,18 +39,19 @@ export function createApp(deps = {}) {
       });
     }
 
+    const acceptedAt = new Date().toISOString();
+    const notified = await notify({
+      staffName,
+      partySize,
+      acceptedAt,
+    });
+
     const reception = createReception({
       staffName,
       partySize,
-      notified: false,
+      notified,
+      acceptedAt,
     });
-
-    const notified = await notify({
-      staffName: reception.staffName,
-      partySize: reception.partySize,
-      acceptedAt: reception.acceptedAt,
-    });
-    reception.notified = notified;
 
     return res.status(201).json(reception);
   });

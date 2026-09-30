@@ -7,11 +7,47 @@
 - `api/` … Express API（受付保存・Slack 通知）
 - `android/` … Jetpack Compose + Material 3 キオスク画面
 
+## UI（Android）
+
+画面は**ボタンだけ**です。見出し・会社名・案内文・「受付する」ボタンはありません。
+
+### 操作（2回押しで成立）
+
+1. 担当者（野坂 / 伊藤 / 梁瀬 / 中原 / 坂本 / 合田 / その他）を押す  
+2. 人数（1〜6）を押す  
+→ その瞬間に API へ送信し、Slack 通知。選択は短いフラッシュ後に解除され、次の来客待ちへ戻ります。
+
+人数を先に押してから担当者を押しても同じです。1回だけでは送信しません。
+
+### レイアウト
+
+```
+【縦向き】                        【横向き】
+┌─────────┬─────────┐          ┌─────────┬─────────┬────┐
+│  野坂   │  伊藤   │          │  野坂   │  伊藤   │ 1  │
+├─────────┼─────────┤          ├─────────┼─────────┼────┤
+│  梁瀬   │  中原   │          │  梁瀬   │  中原   │ 2  │
+├─────────┼─────────┤          ├─────────┼─────────┼────┤
+│  坂本   │  合田   │          │  坂本   │  合田   │ … │
+├─────────┼─────────┤          ├─────────┼─────────┼────┤
+│ その他  │         │          │ その他  │         │ 6  │
+├─────────┴─────────┤          └─────────┴─────────┴────┘
+│ 1  2  3  4  5  6  │
+└───────────────────┘
+```
+
+- スクロールなし（`weight` で画面いっぱい）
+- 常時点灯（`FLAG_KEEP_SCREEN_ON`）
+- 選択中: 青 / 成功: 緑フラッシュ / Slack失敗・通信失敗: 赤フラッシュ
+- Android Studio の Preview「縦向き」「横向き」で見た目を確認できます
+
+会社名「株式会社ライトパス」は Slack 通知文に出ます（キオスク画面には出しません）。
+
 ## API の起動
 
 ```bash
 cd api
-cp .env.example .env   # 必要に応じて編集
+cp .env.example .env   # Slack Webhook 等を記入
 npm install
 npm start              # 既定ポート 8081
 ```
@@ -34,7 +70,7 @@ npm test
 ```bash
 cd api
 docker build -t lightpath-reception-api .
-docker run --rm -p 8081:8081 --env-file .env lightpath-reception-api
+docker run --rm -p 8081:8081 -v reception-data:/app/data --env-file .env lightpath-reception-api
 ```
 
 ### エンドポイント
@@ -48,13 +84,14 @@ docker run --rm -p 8081:8081 --env-file .env lightpath-reception-api
 担当者（`staffName`）: `野坂` / `伊藤` / `梁瀬` / `中原` / `坂本` / `合田` / `その他`  
 人数（`partySize`）: 整数 `1`〜`6`
 
-成功時は `201` と `id`, `staffName`, `partySize`, `acceptedAt`, `notified` を返します。Slack 通知に失敗しても受付は保存され、`notified: false` になります。
+成功時は `201` と `id`, `staffName`, `partySize`, `acceptedAt`, `notified` を返します。Slack 通知に失敗しても受付は保存され、`notified: false` になります。受付データは `RECEPTIONS_FILE`（既定 `data/receptions.json`）に保存されます。
 
 ## 環境変数
 
 | 変数 | 説明 |
 |------|------|
 | `PORT` | API ポート（既定 `8081`） |
+| `RECEPTIONS_FILE` | 受付データの JSON パス |
 | `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL |
 | `SLACK_MENTION_NOSAKA` | 野坂さんの Slack メンバー ID（例: `U0123...`） |
 | `SLACK_MENTION_ITO` | 伊藤 |
@@ -85,12 +122,9 @@ docker run --rm -p 8081:8081 --env-file .env lightpath-reception-api
 
 1. [Android Studio](https://developer.android.com/studio) で `android/` フォルダを Open
 2. Gradle 同期を待つ
-3. エミュレータまたは実機で実行
+3. エミュレータまたは実機で実行（または Preview で UI 確認）
 
 - パッケージ: `jp.co.lightpath.reception`
-- 画面はボタンのみ。担当者または人数を選んだあと、もう一方を選ぶと即 API へ POST
-- 成功時は選択ボタンが短く tertiary（緑系）にフラッシュ、Slack 失敗時は error（赤）にフラッシュしてから選択解除
-- 画面は常時点灯（`FLAG_KEEP_SCREEN_ON`）
 - 既定の API URL: `http://10.0.2.2:8081`（エミュレータからホスト側 API）
 
 API URL の変更:
