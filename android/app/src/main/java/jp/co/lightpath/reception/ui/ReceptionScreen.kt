@@ -39,7 +39,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val STAFF_NAMES = listOf("野坂", "伊藤", "梁瀬", "中原", "坂本", "合田", "その他")
+private data class StaffOption(val name: String, val romaji: String)
+
+private val STAFF = listOf(
+    StaffOption("野坂", "Nosaka"),
+    StaffOption("伊藤", "Ito"),
+    StaffOption("梁瀬", "Yanase"),
+    StaffOption("中原", "Nakahara"),
+    StaffOption("坂本", "Sakamoto"),
+    StaffOption("合田", "Aida"),
+    StaffOption("その他", "Other"),
+)
 private val PARTY_SIZES = (1..6).toList()
 
 private enum class FlashKind { None, Success, Error }
@@ -136,7 +146,7 @@ fun ReceptionScreen(api: ReceptionApi) {
                     enabled = !submitting,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(0.22f),
+                        .weight(0.18f),
                     onSelect = { size ->
                         selectedPartySize = size
                         trySubmit(selectedStaff, size)
@@ -155,7 +165,7 @@ private fun StaffGrid(
     modifier: Modifier = Modifier,
     onSelect: (String) -> Unit,
 ) {
-    val rows = STAFF_NAMES.chunked(2)
+    val rows = STAFF.chunked(2)
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -167,16 +177,18 @@ private fun StaffGrid(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                rowItems.forEach { name ->
+                rowItems.forEach { staff ->
                     ChoiceButton(
-                        label = name,
-                        selected = selected == name,
+                        label = staff.name,
+                        subtitle = staff.romaji,
+                        selected = selected == staff.name,
                         flash = flash,
                         enabled = enabled,
+                        large = true,
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight(),
-                        onClick = { onSelect(name) },
+                        onClick = { onSelect(staff.name) },
                     )
                 }
                 if (rowItems.size == 1) {
@@ -249,13 +261,39 @@ private fun ChoiceButton(
     flash: FlashKind,
     enabled: Boolean,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    large: Boolean = false,
     onClick: () -> Unit,
 ) {
-    val textStyle = MaterialTheme.typography.headlineMedium.copy(
+    val labelStyle = MaterialTheme.typography.headlineMedium.copy(
         fontWeight = FontWeight.Bold,
-        fontSize = 28.sp,
+        fontSize = if (large) 42.sp else 30.sp,
         textAlign = TextAlign.Center,
+        lineHeight = if (large) 46.sp else 34.sp,
     )
+    val subtitleStyle = MaterialTheme.typography.titleMedium.copy(
+        fontWeight = FontWeight.Medium,
+        fontSize = if (large) 16.sp else 14.sp,
+        textAlign = TextAlign.Center,
+        lineHeight = 18.sp,
+    )
+
+    @Composable
+    fun LabelContent() {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(text = label, style = labelStyle)
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = subtitleStyle,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+        }
+    }
 
     if (selected) {
         val colors = when (flash) {
@@ -282,7 +320,7 @@ private fun ChoiceButton(
             modifier = modifier,
             colors = colors,
         ) {
-            Text(text = label, style = textStyle)
+            LabelContent()
         }
     } else {
         FilledTonalButton(
@@ -290,7 +328,7 @@ private fun ChoiceButton(
             enabled = enabled,
             modifier = modifier,
         ) {
-            Text(text = label, style = textStyle)
+            LabelContent()
         }
     }
 }
