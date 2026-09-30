@@ -245,7 +245,7 @@ private fun StaffGrid(
                     }
                     val (label, subtitle) = when (special) {
                         SpecialSelect.Fired -> "クビ" to "中原"
-                        SpecialSelect.Welcome -> "おかえり" to "梁瀬"
+                        SpecialSelect.Welcome -> "おかえりなさい" to "梁瀬"
                         SpecialSelect.None -> staff.name to staff.romaji
                     }
                     ChoiceButton(

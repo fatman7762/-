@@ -234,6 +234,6 @@ describe('buildSlackMessage', () => {
       partySize: 2,
       acceptedAt: '2026-03-15T04:05:00.000Z',
     });
-    assert.equal(text, 'おかえり\n@梁瀬 2名');
+    assert.equal(text, 'おかえりなさい\n@梁瀬 2名');
   });
 });

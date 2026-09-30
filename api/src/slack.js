@@ -25,7 +25,7 @@ export function buildSlackMessage({ staffName, partySize, acceptedAt }) {
     return [`お前はクビだ！`, `@中原 ${partySize}名`].join('\n');
   }
   if (staffName === '梁瀬') {
-    return [`おかえり`, `@梁瀬 ${partySize}名`].join('\n');
+    return [`おかえりなさい`, `@梁瀬 ${partySize}名`].join('\n');
   }
 
   const sizeLabel = partySize >= 6 ? '6名～' : `${partySize}名`;
