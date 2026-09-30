@@ -1,0 +1,41 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+*.iml
+.vscode/
+*.log
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+**/local.properties
+
+# Node / API
+api/node_modules/
+api/coverage/
+npm-debug.log*
+yarn-error.log*
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/captures/
+android/local.properties
+android/*.apk
+android/*.aab
+android/*.ap_
+android/.cxx/
+android/**/intermediates/
+android/**/generated/
+*.keystore
+*.jks
+
+# Kotlin / Java
+*.class
+*.jar
+!android/gradle/wrapper/gradle-wrapper.jar

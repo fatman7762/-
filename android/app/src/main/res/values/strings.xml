@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ライトパス受付</string>
+    <!-- Override in product flavors or rebuild to point at a real device host IP -->
+    <string name="api_base_url">http://10.0.2.2:8081</string>
+</resources>
