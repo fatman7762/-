@@ -1,10 +1,10 @@
 package jp.co.lightpath.reception.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -19,13 +20,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,6 +41,8 @@ import androidx.compose.ui.unit.sp
 import jp.co.lightpath.reception.data.ReceptionApi
 import jp.co.lightpath.reception.data.ReceptionResponse
 import jp.co.lightpath.reception.ui.theme.LightpathReceptionTheme
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -56,7 +62,12 @@ private val STAFF = listOf(
 )
 private val PARTY_SIZES = (1..6).toList()
 
+private fun partyLabel(size: Int): String = if (size >= 6) "6～" else size.toString()
+
 private enum class FlashKind { None, Success, Error }
+
+private val TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+private val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("M/d (E)", java.util.Locale.JAPANESE)
 
 private data class TypeScale(
     val staffName: TextUnit,
@@ -234,8 +245,75 @@ private fun StaffGrid(
                     )
                 }
                 if (rowItems.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
+                    ClockPopout(
+                        scale = scale,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ClockPopout(
+    scale: TypeScale,
+    modifier: Modifier = Modifier,
+) {
+    var now by remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = LocalDateTime.now()
+            delay(1000)
+        }
+    }
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .shadow(10.dp, RoundedCornerShape(20.dp)),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp,
+            shadowElevation = 8.dp,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = now.format(DATE_FORMATTER),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = scale.staffRomaji,
+                        textAlign = TextAlign.Center,
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = now.format(TIME_FORMATTER),
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = scale.staffName * 0.72f,
+                        textAlign = TextAlign.Center,
+                        lineHeight = scale.staffName * 0.8f,
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
             }
         }
     }
@@ -257,7 +335,7 @@ private fun PartySizeRow(
     ) {
         PARTY_SIZES.forEach { size ->
             ChoiceButton(
-                label = size.toString(),
+                label = partyLabel(size),
                 selected = selected == size,
                 flash = flash,
                 enabled = enabled,
@@ -286,7 +364,7 @@ private fun PartySizeColumn(
     ) {
         PARTY_SIZES.forEach { size ->
             ChoiceButton(
-                label = size.toString(),
+                label = partyLabel(size),
                 selected = selected == size,
                 flash = flash,
                 enabled = enabled,

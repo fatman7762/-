@@ -103,7 +103,34 @@
       color: #fff;
     }
     button.choice:disabled { opacity: 0.7; cursor: wait; }
-    .staff .spacer { visibility: hidden; }
+    .clock-popout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35em;
+      min-width: 0;
+      min-height: 0;
+      border-radius: 20px;
+      background: #fff;
+      color: var(--primary);
+      box-shadow:
+        0 10px 24px rgba(21, 101, 192, 0.18),
+        0 2px 8px rgba(0, 0, 0, 0.08);
+      padding: 10px;
+      user-select: none;
+    }
+    .clock-popout .date {
+      font-size: clamp(0.75rem, 2vmin, 1.2rem);
+      font-weight: 500;
+      color: #546e7a;
+    }
+    .clock-popout .time {
+      font-size: clamp(1.4rem, 4.5vmin, 2.8rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
     #log {
       position: fixed;
       left: 12px;
@@ -158,6 +185,7 @@
       { name: "その他", romaji: "Other" },
     ];
     const SIZES = [1, 2, 3, 4, 5, 6];
+    const partyLabel = (n) => (n >= 6 ? "6～" : String(n));
     let selectedStaff = null;
     let selectedSize = null;
     let submitting = false;
@@ -194,6 +222,25 @@
       setTimeout(() => logEl.classList.remove("show"), 2500);
     }
 
+    function paintClock() {
+      const now = new Date();
+      const dateEl = document.getElementById("clock-date");
+      const timeEl = document.getElementById("clock-time");
+      if (!dateEl || !timeEl) return;
+      dateEl.textContent = now.toLocaleDateString("ja-JP", {
+        month: "numeric",
+        day: "numeric",
+        weekday: "short",
+      });
+      timeEl.textContent = now.toLocaleTimeString("ja-JP", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+    }
+    setInterval(paintClock, 1000);
+
     function render(flash) {
       staffEl.innerHTML = "";
       STAFF.forEach(({ name, romaji }) => {
@@ -210,16 +257,19 @@
         b.onclick = () => onStaff(name);
         staffEl.appendChild(b);
       });
-      const spacer = document.createElement("div");
-      spacer.className = "spacer";
-      staffEl.appendChild(spacer);
+      const clock = document.createElement("div");
+      clock.className = "clock-popout";
+      clock.id = "clock-popout";
+      clock.innerHTML = `<span class="date" id="clock-date"></span><span class="time" id="clock-time"></span>`;
+      staffEl.appendChild(clock);
+      paintClock();
 
       partyEl.innerHTML = "";
       SIZES.forEach((n) => {
         const b = document.createElement("button");
         b.className = "choice";
         b.type = "button";
-        b.textContent = String(n);
+        b.textContent = partyLabel(n);
         b.disabled = submitting;
         if (selectedSize === n) {
           b.classList.add("selected");
