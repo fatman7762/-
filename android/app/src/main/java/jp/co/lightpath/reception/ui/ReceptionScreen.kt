@@ -164,7 +164,13 @@ fun ReceptionScreen(api: ReceptionApi) {
             }
             if (result.isSuccess) {
                 flash = FlashKind.Success
-                intercom.play(selectedStaffSpecial)
+                intercom.play(
+                    when (selectedStaffSpecial) {
+                        SpecialSelect.Fired -> ReceptionChime.Nakahara
+                        SpecialSelect.Welcome -> ReceptionChime.Yanase
+                        SpecialSelect.None -> ReceptionChime.Default
+                    },
+                )
             } else {
                 flash = FlashKind.Error
             }

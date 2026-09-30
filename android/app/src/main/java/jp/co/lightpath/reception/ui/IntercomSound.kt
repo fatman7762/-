@@ -5,6 +5,12 @@ import android.media.AudioAttributes
 import android.media.SoundPool
 import jp.co.lightpath.reception.R
 
+enum class ReceptionChime {
+    Default,
+    Nakahara,
+    Yanase,
+}
+
 /**
  * Reception success chimes.
  * Default: Intercom01 Ding Dong Close.
@@ -39,11 +45,11 @@ class IntercomSound(context: Context) {
         sparkleId = soundPool.load(appContext, R.raw.sparkle, 1)
     }
 
-    fun play(special: SpecialSelect = SpecialSelect.None) {
-        val id = when (special) {
-            SpecialSelect.Fired -> explosionId
-            SpecialSelect.Welcome -> sparkleId
-            SpecialSelect.None -> intercomId
+    fun play(chime: ReceptionChime = ReceptionChime.Default) {
+        val id = when (chime) {
+            ReceptionChime.Nakahara -> explosionId
+            ReceptionChime.Yanase -> sparkleId
+            ReceptionChime.Default -> intercomId
         }
         if (id == 0 || id !in loaded) return
         soundPool.play(id, 1f, 1f, 1, 0, 1f)
