@@ -39,10 +39,15 @@ data class PartyCell(
     val label: String,
 )
 
+/** Main grid capacity including the clock cell (default 8, expandable in edit mode). */
+const val MAX_MAIN_CELLS = 18
+
 data class ReceptionLayout(
     val mainCells: List<MainCell>,
     val partyCells: List<PartyCell>,
-)
+) {
+    val canExpandMain: Boolean get() = mainCells.size < MAX_MAIN_CELLS
+}
 
 fun defaultReceptionLayout(): ReceptionLayout {
     val people = listOf(

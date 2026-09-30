@@ -95,13 +95,17 @@
       background: #e8eef5; color: #37474f;
       font-size: clamp(2rem, 6vmin, 3.5rem);
     }
-    .minus {
+    .minus, .plus-badge {
       position: absolute; top: 6px; right: 6px;
       width: 34px; height: 34px; border: 0; border-radius: 50%;
-      background: var(--error); color: #fff; font-size: 22px; font-weight: 700;
+      color: #fff; font-size: 22px; font-weight: 700;
       cursor: pointer; z-index: 2;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1; padding: 0;
     }
+    .minus { background: var(--error); }
+    .plus-badge { background: var(--primary); }
     #log {
       position: fixed; left: 12px; right: 12px;
       bottom: max(12px, env(safe-area-inset-bottom));
@@ -135,7 +139,7 @@
 </head>
 <body>
   <div id="banner">
-    <span>編集モード（タップで移動 / −で削除 / ＋で追加 / 長押しで編集）</span>
+    <span>編集モード（タップで移動 / −で削除 / ＋で追加 / 時刻右上＋で枠追加 / 最大18 / 長押しで編集）</span>
     <button type="button" id="doneBtn">完了</button>
   </div>
   <div id="app" class="portrait">
@@ -153,7 +157,10 @@
   </dialog>
   <script>
     const STORAGE_KEY = "lightpath_reception_layout_v1";
+    const MAX_MAIN_CELLS = 18;
+    const APPEND_MAIN_SENTINEL = "__append__";
     const uid = () => crypto.randomUUID();
+    const canExpandMain = () => layout.main.length < MAX_MAIN_CELLS;
 
     function defaultLayout() {
       return {
@@ -357,11 +364,17 @@
             type: "person", id: uid(), name, romaji: romaji || name,
             role: "Normal", deleteLocked: false,
           };
-          const emptyIdx = dialogTargetId
-            ? layout.main.findIndex((c) => c.id === dialogTargetId && c.type === "empty")
-            : layout.main.findIndex((c) => c.type === "empty");
-          if (emptyIdx >= 0) layout.main[emptyIdx] = person;
-          else layout.main.push(person);
+          if (dialogTargetId === APPEND_MAIN_SENTINEL) {
+            if (!canExpandMain()) return;
+            layout.main.push(person);
+          } else {
+            const emptyIdx = dialogTargetId
+              ? layout.main.findIndex((c) => c.id === dialogTargetId && c.type === "empty")
+              : layout.main.findIndex((c) => c.type === "empty");
+            if (emptyIdx >= 0) layout.main[emptyIdx] = person;
+            else if (canExpandMain()) layout.main.push(person);
+            else return;
+          }
         } else {
           const idx = layout.main.findIndex((c) => c.id === dialogTargetId);
           if (idx >= 0 && layout.main[idx].type === "person") {
@@ -476,6 +489,19 @@
             },
           );
           wrap.appendChild(clock);
+          if (editMode && canExpandMain()) {
+            const plusBadge = document.createElement("button");
+            plusBadge.type = "button";
+            plusBadge.className = "plus-badge";
+            plusBadge.textContent = "＋";
+            plusBadge.title = `担当者枠を追加（最大${MAX_MAIN_CELLS}）`;
+            plusBadge.onclick = (e) => {
+              e.stopPropagation();
+              dialogTargetId = APPEND_MAIN_SENTINEL;
+              openPersonDialog("addPerson", null);
+            };
+            wrap.appendChild(plusBadge);
+          }
           staffEl.appendChild(wrap);
           paintClock();
           return;

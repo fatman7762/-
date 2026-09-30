@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import jp.co.lightpath.reception.data.ReceptionApi
 import jp.co.lightpath.reception.data.ReceptionResponse
 import jp.co.lightpath.reception.ui.layout.LayoutStore
+import jp.co.lightpath.reception.ui.layout.MAX_MAIN_CELLS
 import jp.co.lightpath.reception.ui.layout.MainCell
 import jp.co.lightpath.reception.ui.layout.PartyCell
 import jp.co.lightpath.reception.ui.layout.ReceptionLayout
@@ -86,23 +87,31 @@ private data class TypeScale(
     val gap: Dp,
 )
 
-private fun typeScale(maxWidth: Dp, maxHeight: Dp, landscape: Boolean): TypeScale {
+private fun typeScale(
+    maxWidth: Dp,
+    maxHeight: Dp,
+    landscape: Boolean,
+    mainCount: Int = 8,
+): TypeScale {
     val shortest = min(maxWidth.value, maxHeight.value)
+    val rows = ((mainCount + 1) / 2).coerceIn(4, 9)
     val staffName = when {
-        landscape -> (maxHeight.value / 11f).coerceIn(34f, 64f)
-        else -> (shortest / 12f).coerceIn(36f, 68f)
+        landscape -> (maxHeight.value / (rows * 2.4f + 2f)).coerceIn(22f, 64f)
+        else -> (shortest / (rows * 2.6f + 2f)).coerceIn(22f, 68f)
     }
     val party = when {
-        landscape -> (maxHeight.value / 14f).coerceIn(28f, 48f)
-        else -> (maxHeight.value / 22f).coerceIn(26f, 42f)
+        landscape -> (maxHeight.value / 14f).coerceIn(22f, 48f)
+        else -> (maxHeight.value / 22f).coerceIn(20f, 42f)
     }
     return TypeScale(
         staffName = staffName.sp,
-        staffRomaji = (staffName * 0.38f).coerceIn(13f, 24f).sp,
+        staffRomaji = (staffName * 0.38f).coerceIn(10f, 24f).sp,
         party = party.sp,
-        gap = if (shortest >= 700f) 14.dp else 10.dp,
+        gap = if (shortest >= 700f && rows <= 5) 14.dp else if (rows >= 7) 6.dp else 10.dp,
     )
 }
+
+private const val APPEND_MAIN_SENTINEL = "__append__"
 
 private sealed class EditDialog {
     data class Person(val index: Int, val name: String, val romaji: String) : EditDialog()
@@ -247,9 +256,14 @@ fun ReceptionScreen(api: ReceptionApi) {
             .padding(12.dp),
     ) {
         val landscape = maxWidth > maxHeight
-        val scale = typeScale(maxWidth, maxHeight, landscape)
-        val columns = if (landscape) 2 else 2
+        val scale = typeScale(maxWidth, maxHeight, landscape, layout.mainCells.size)
+        val columns = 2
 
+        fun openExpandPerson() {
+            if (!layout.canExpandMain) return
+            movingMainId = APPEND_MAIN_SENTINEL
+            dialog = EditDialog.AddPerson
+        }
         Column(Modifier = Modifier.fillMaxSize()) {
             if (editMode) {
                 Surface(
@@ -267,7 +281,7 @@ fun ReceptionScreen(api: ReceptionApi) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "編集モード（タップで移動 / −で削除 / ＋で追加）",
+                            text = "編集モード（タップで移動 / −で削除 / ＋で追加 / 最大${MAX_MAIN_CELLS}）",
                             style = MaterialTheme.typography.titleSmall,
                         )
                         TextButton(onClick = { toggleEditMode() }) {
@@ -325,6 +339,8 @@ fun ReceptionScreen(api: ReceptionApi) {
                             }
                         },
                         onDelete = { deleteMain(it) },
+                        canExpand = layout.canExpandMain,
+                        onExpand = { openExpandPerson() },
                         onClockClick = {
                             if (editMode) {
                                 if (movingMainId == null) {
@@ -415,6 +431,8 @@ fun ReceptionScreen(api: ReceptionApi) {
                             }
                         },
                         onDelete = { deleteMain(it) },
+                        canExpand = layout.canExpandMain,
+                        onExpand = { openExpandPerson() },
                         onClockClick = {
                             if (editMode) {
                                 if (movingMainId == null) {
@@ -499,13 +517,22 @@ fun ReceptionScreen(api: ReceptionApi) {
             onConfirm = { name, romaji ->
                 val person = newPerson(name, romaji)
                 val cells = layout.mainCells.toMutableList()
-                val emptyIdx = movingMainId?.let { id -> cells.indexOfFirst { it.id == id && it is MainCell.Empty } }
-                    ?.takeIf { it >= 0 }
-                    ?: cells.indexOfFirst { it is MainCell.Empty }
-                if (emptyIdx >= 0) {
-                    cells[emptyIdx] = person
-                } else {
+                val append = movingMainId == APPEND_MAIN_SENTINEL
+                if (append) {
+                    if (cells.size >= MAX_MAIN_CELLS) return@PersonEditDialog
                     cells.add(person)
+                } else {
+                    val emptyIdx = movingMainId?.let { id ->
+                        cells.indexOfFirst { it.id == id && it is MainCell.Empty }
+                    }?.takeIf { it >= 0 }
+                        ?: cells.indexOfFirst { it is MainCell.Empty }
+                    if (emptyIdx >= 0) {
+                        cells[emptyIdx] = person
+                    } else if (cells.size < MAX_MAIN_CELLS) {
+                        cells.add(person)
+                    } else {
+                        return@PersonEditDialog
+                    }
                 }
                 persist(layout.copy(mainCells = cells))
                 dialog = null
@@ -539,6 +566,8 @@ private fun MainGrid(
     enabled: Boolean,
     scale: TypeScale,
     modifier: Modifier = Modifier,
+    canExpand: Boolean = false,
+    onExpand: () -> Unit = {},
     onClockLongPress: () -> Unit,
     onClockClick: () -> Unit,
     onPersonClick: (MainCell.Person) -> Unit,
@@ -611,6 +640,12 @@ private fun MainGrid(
                                     onLongClick = onClockLongPress,
                                     onClick = onClockClick,
                                 )
+                                if (editMode && canExpand) {
+                                    PlusBadge(
+                                        modifier = Modifier.align(Alignment.TopEnd),
+                                        onClick = onExpand,
+                                    )
+                                }
                             }
                             is MainCell.Empty -> {
                                 PlusCell(
@@ -853,6 +888,27 @@ private fun MinusBadge(
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text("−", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+        }
+    }
+}
+
+@Composable
+private fun PlusBadge(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier
+            .padding(6.dp)
+            .size(36.dp),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        shadowElevation = 4.dp,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text("＋", fontWeight = FontWeight.Bold, fontSize = 22.sp)
         }
     }
 }
