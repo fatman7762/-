@@ -38,10 +38,10 @@
 
 - スクロールなし（`weight` で画面いっぱい）
 - 常時点灯（`FLAG_KEEP_SCREEN_ON`）
-- 選択中: 青 / 成功: 緑フラッシュ / Slack失敗・通信失敗: 赤フラッシュ
+- 選択中: 青 / 受付成功: 緑フラッシュ / 通信失敗: 赤フラッシュ
 - Android Studio の Preview「縦向き」「横向き」で見た目を確認できます
 
-会社名「株式会社ライトパス」は Slack 通知文に出ます（キオスク画面には出しません）。
+**Slack 通知は任意**です。Webhook 未設定でも受付は成立します（あとから `.env` を足せば有効化できます）。会社名「株式会社ライトパス」は Slack 通知文側の文言です。
 
 ## API の起動
 
@@ -84,7 +84,7 @@ docker run --rm -p 8081:8081 -v reception-data:/app/data --env-file .env lightpa
 担当者（`staffName`）: `野坂` / `伊藤` / `梁瀬` / `中原` / `坂本` / `合田` / `その他`  
 人数（`partySize`）: 整数 `1`〜`6`
 
-成功時は `201` と `id`, `staffName`, `partySize`, `acceptedAt`, `notified` を返します。Slack 通知に失敗しても受付は保存され、`notified: false` になります。受付データは `RECEPTIONS_FILE`（既定 `data/receptions.json`）に保存されます。
+成功時は `201` と `id`, `staffName`, `partySize`, `acceptedAt`, `notified` を返します。`SLACK_WEBHOOK_URL` が空なら通知はスキップされ `notified: false` のまま受付は保存されます。受付データは `RECEPTIONS_FILE`（既定 `data/receptions.json`）に保存されます。
 
 ## 環境変数
 

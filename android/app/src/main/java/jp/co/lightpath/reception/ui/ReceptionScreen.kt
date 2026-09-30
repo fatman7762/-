@@ -66,11 +66,8 @@ fun ReceptionScreen(api: ReceptionApi) {
                     api.createReception(staff, size)
                 }
             }
-            flash = when {
-                result.isFailure -> FlashKind.Error
-                result.getOrNull()?.notified == false -> FlashKind.Error
-                else -> FlashKind.Success
-            }
+            // Slack 通知は後から接続。受付 API が成功すれば緑フラッシュにする。
+            flash = if (result.isSuccess) FlashKind.Success else FlashKind.Error
             delay(700)
             flash = FlashKind.None
             clearSelection()
