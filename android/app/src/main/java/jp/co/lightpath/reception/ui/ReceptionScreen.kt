@@ -539,8 +539,9 @@ private fun MainGrid(
                         when (cell) {
                             is MainCell.Person -> {
                                 val isSelected = !editMode && selectedStaff == cell.name
+                                // 中原・梁瀬は受付完了フラッシュ中も専用表示を維持（緑にしない）
                                 val special = when {
-                                    !isSelected || flash != FlashKind.None -> SpecialSelect.None
+                                    !isSelected -> SpecialSelect.None
                                     cell.role == StaffRole.Nakahara -> SpecialSelect.Fired
                                     cell.role == StaffRole.Yanase -> SpecialSelect.Welcome
                                     else -> SpecialSelect.None
@@ -554,7 +555,8 @@ private fun MainGrid(
                                     label = label,
                                     subtitle = subtitle,
                                     selected = isSelected || movingId == cell.id,
-                                    flash = flash,
+                                    // 専用ロールは緑フラッシュを適用しない
+                                    flash = if (special == SpecialSelect.None) flash else FlashKind.None,
                                     enabled = enabled || editMode,
                                     specialSelect = special,
                                     moving = movingId == cell.id,
@@ -852,18 +854,18 @@ private fun ChoiceButton(
     )
 
     val container = when {
-        flash == FlashKind.Success && selected -> MaterialTheme.colorScheme.tertiary
-        (flash == FlashKind.Error || specialSelect == SpecialSelect.Fired) && selected ->
-            MaterialTheme.colorScheme.error
+        specialSelect == SpecialSelect.Fired && selected -> MaterialTheme.colorScheme.error
         specialSelect == SpecialSelect.Welcome && selected -> WelcomeYellow
+        flash == FlashKind.Success && selected -> MaterialTheme.colorScheme.tertiary
+        flash == FlashKind.Error && selected -> MaterialTheme.colorScheme.error
         selected -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.secondaryContainer
     }
     val contentColor = when {
-        flash == FlashKind.Success && selected -> MaterialTheme.colorScheme.onTertiary
-        (flash == FlashKind.Error || specialSelect == SpecialSelect.Fired) && selected ->
-            MaterialTheme.colorScheme.onError
+        specialSelect == SpecialSelect.Fired && selected -> MaterialTheme.colorScheme.onError
         specialSelect == SpecialSelect.Welcome && selected -> OnWelcomeYellow
+        flash == FlashKind.Success && selected -> MaterialTheme.colorScheme.onTertiary
+        flash == FlashKind.Error && selected -> MaterialTheme.colorScheme.onError
         selected -> MaterialTheme.colorScheme.onPrimary
         else -> MaterialTheme.colorScheme.onSecondaryContainer
     }

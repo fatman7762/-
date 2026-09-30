@@ -461,16 +461,20 @@
         let sub = cell.romaji;
         let special = "";
         const selected = !editMode && selectedStaff === cell.name;
-        if (selected && !flash) {
+        // 中原・梁瀬は完了フラッシュ中も専用表示を維持（緑にしない）
+        if (selected) {
           if (cell.role === "Nakahara") { title = "クビ"; sub = cell.name; special = "kubi"; }
-          if (cell.role === "Yanase") { title = "おかえりなさい"; sub = cell.name; special = "okaeri"; }
+          else if (cell.role === "Yanase") { title = "おかえりなさい"; sub = cell.name; special = "okaeri"; }
         }
         b.innerHTML = `<span>${title}</span><span class="romaji">${sub || ""}</span>`;
         if (selected) {
           b.classList.add("selected");
-          if (special) b.classList.add(special);
-          if (flash === "success") b.classList.add("success");
-          if (flash === "error") b.classList.add("error");
+          if (special) {
+            b.classList.add(special);
+          } else {
+            if (flash === "success") b.classList.add("success");
+            if (flash === "error") b.classList.add("error");
+          }
         }
         if (movingMainId === cell.id) b.classList.add("moving");
         b.disabled = submitting && !editMode;
