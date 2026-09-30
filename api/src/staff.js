@@ -20,11 +20,12 @@ export const STAFF_MENTION_ENV = Object.freeze({
 });
 
 /**
+ * Layout 編集で担当者名を変えられるため、空でない文字列を許可する。
  * @param {unknown} name
  * @returns {name is string}
  */
 export function isValidStaffName(name) {
-  return typeof name === 'string' && STAFF_NAMES.includes(name);
+  return typeof name === 'string' && name.trim().length > 0 && name.trim().length <= 40;
 }
 
 /**

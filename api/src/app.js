@@ -29,12 +29,13 @@ export function createApp(deps = {}) {
   });
 
   app.post('/receptions', async (req, res) => {
-    const { staffName, partySize } = req.body ?? {};
+    const { staffName: rawStaffName, partySize } = req.body ?? {};
+    const staffName = typeof rawStaffName === 'string' ? rawStaffName.trim() : rawStaffName;
 
     if (!isValidStaffName(staffName)) {
       return res.status(400).json({
         error: 'invalid_staffName',
-        message: 'staffName must be one of the configured staff names',
+        message: 'staffName must be a non-empty string',
       });
     }
 

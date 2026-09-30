@@ -13,216 +13,213 @@
       --on-tonal: #0d2137;
       --success: #2e7d32;
       --error: #c62828;
+      --okaeri: #f9a825;
+      --on-okaeri: #212121;
       --gap: clamp(8px, 1.2vw, 16px);
     }
     * { box-sizing: border-box; }
     html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      height: 100dvh;
+      margin: 0; width: 100%; height: 100%; height: 100dvh;
       background: var(--bg);
       font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
-      overflow: hidden;
-      touch-action: manipulation;
+      overflow: hidden; touch-action: manipulation;
+    }
+    #banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 12px;
+      background: #cfd8dc;
+      font-size: 14px;
+    }
+    #banner.show { display: flex; }
+    #banner button {
+      border: 0; background: var(--primary); color: #fff;
+      border-radius: 8px; padding: 8px 14px; font-weight: 700; cursor: pointer;
     }
     #app {
-      height: 100%;
-      height: 100dvh;
+      height: calc(100% - 0px); height: 100dvh;
       padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-      display: flex;
-      gap: var(--gap);
-      min-height: 0;
+      display: flex; gap: var(--gap); min-height: 0;
     }
+    body.editing #app { height: calc(100dvh - 48px); }
     #app.portrait { flex-direction: column; }
     #app.landscape { flex-direction: row; }
     .staff {
       flex: 1 1 auto;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: repeat(4, 1fr);
+      grid-auto-rows: 1fr;
       gap: var(--gap);
-      min-height: 0;
-      min-width: 0;
+      min-height: 0; min-width: 0;
     }
-    .party {
-      display: flex;
-      gap: var(--gap);
-      min-height: 0;
-      min-width: 0;
-    }
-    #app.portrait .party {
-      flex: 0 0 17%;
-      flex-direction: row;
-    }
+    .party { display: flex; gap: var(--gap); min-height: 0; min-width: 0; }
+    #app.portrait .party { flex: 0 0 17%; flex-direction: row; }
     #app.landscape .staff { flex: 1.65 1 0; }
-    #app.landscape .party {
-      flex: 0.55 1 0;
-      flex-direction: column;
+    #app.landscape .party { flex: 0.55 1 0; flex-direction: column; }
+    .cell { position: relative; min-width: 0; min-height: 0; }
+    button.choice, .clock-popout, button.plus {
+      width: 100%; height: 100%;
+      border: 0; border-radius: 16px;
+      font-weight: 700; cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.22em; line-height: 1.05; padding: 6px;
+      user-select: none; -webkit-tap-highlight-color: transparent;
     }
     button.choice {
-      border: 0;
-      border-radius: 16px;
+      background: var(--tonal); color: var(--on-tonal);
       font-size: clamp(1.25rem, 3.2vmin, 2.4rem);
-      font-weight: 700;
-      cursor: pointer;
-      background: var(--tonal);
-      color: var(--on-tonal);
-      min-width: 0;
-      min-height: 0;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.22em;
-      line-height: 1.05;
-      padding: 6px;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
     }
-    button.choice.staff {
-      font-size: clamp(1.8rem, 6.2vmin, 4rem);
-    }
+    button.choice.staff { font-size: clamp(1.4rem, 5vmin, 3.2rem); }
     button.choice .romaji {
-      font-size: clamp(0.75rem, 2.1vmin, 1.35rem);
-      font-weight: 500;
-      opacity: 0.85;
-      letter-spacing: 0.02em;
+      font-size: clamp(0.7rem, 2vmin, 1.2rem);
+      font-weight: 500; opacity: 0.85;
     }
-    button.choice.selected {
-      background: var(--primary);
-      color: var(--on-primary);
+    button.choice.selected { background: var(--primary); color: var(--on-primary); }
+    button.choice.selected.kubi { background: var(--error); color: #fff; }
+    button.choice.selected.okaeri { background: var(--okaeri); color: var(--on-okaeri); }
+    button.choice.success { background: var(--success); color: #fff; }
+    button.choice.error { background: var(--error); color: #fff; }
+    button.choice.moving, .clock-popout.moving, button.plus.moving {
+      outline: 3px solid var(--primary); outline-offset: -3px;
     }
-    button.choice.selected.kubi {
-      background: var(--error);
-      color: #fff;
-    }
-    button.choice.selected.okaeri {
-      background: #f9a825;
-      color: #212121;
-    }
-    button.choice.success {
-      background: var(--success);
-      color: #fff;
-    }
-    button.choice.error {
-      background: var(--error);
-      color: #fff;
-    }
-    button.choice:disabled { opacity: 0.7; cursor: wait; }
     .clock-popout {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.35em;
-      min-width: 0;
-      min-height: 0;
-      border-radius: 20px;
-      background: #fff;
-      color: var(--primary);
-      box-shadow:
-        0 10px 24px rgba(21, 101, 192, 0.18),
-        0 2px 8px rgba(0, 0, 0, 0.08);
-      padding: 10px;
-      user-select: none;
+      background: #fff; color: var(--primary);
+      box-shadow: 0 10px 24px rgba(21,101,192,0.18), 0 2px 8px rgba(0,0,0,0.08);
     }
-    .clock-popout .date {
-      font-size: clamp(0.75rem, 2vmin, 1.2rem);
-      font-weight: 500;
-      color: #546e7a;
+    .clock-popout .date { font-size: clamp(0.75rem, 2vmin, 1.2rem); font-weight: 500; color: #546e7a; }
+    .clock-popout .time { font-size: clamp(1.2rem, 4vmin, 2.4rem); font-weight: 700; }
+    button.plus {
+      background: #e8eef5; color: #37474f;
+      font-size: clamp(2rem, 6vmin, 3.5rem);
     }
-    .clock-popout .time {
-      font-size: clamp(1.4rem, 4.5vmin, 2.8rem);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      line-height: 1;
+    .minus {
+      position: absolute; top: 6px; right: 6px;
+      width: 34px; height: 34px; border: 0; border-radius: 50%;
+      background: var(--error); color: #fff; font-size: 22px; font-weight: 700;
+      cursor: pointer; z-index: 2;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     #log {
-      position: fixed;
-      left: 12px;
-      right: 12px;
+      position: fixed; left: 12px; right: 12px;
       bottom: max(12px, env(safe-area-inset-bottom));
-      pointer-events: none;
-      font-size: clamp(14px, 1.8vmin, 20px);
-      color: #333;
-      background: rgba(255,255,255,0.92);
-      border-radius: 10px;
-      padding: 8px 12px;
+      pointer-events: none; font-size: clamp(14px, 1.8vmin, 20px);
+      color: #333; background: rgba(255,255,255,0.92);
+      border-radius: 10px; padding: 8px 12px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-      opacity: 0;
-      transition: opacity 0.2s;
-      text-align: center;
+      opacity: 0; transition: opacity 0.2s; text-align: center;
     }
     #log.show { opacity: 1; }
-
-    @media (orientation: landscape) {
-      #app { flex-direction: row; }
-      #app .party {
-        flex: 0.55 1 0;
-        flex-direction: column;
-        height: auto;
-      }
-      #app .staff { flex: 1.65 1 0; }
+    dialog {
+      border: 0; border-radius: 16px; padding: 20px;
+      width: min(420px, 92vw);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
     }
-    @media (orientation: portrait) {
-      #app { flex-direction: column; }
-      #app .party {
-        flex: 0 0 17%;
-        flex-direction: row;
-        width: auto;
-      }
+    dialog::backdrop { background: rgba(0,0,0,0.35); }
+    dialog h3 { margin: 0 0 12px; }
+    dialog label { display: block; font-size: 13px; margin: 8px 0 4px; }
+    dialog input {
+      width: 100%; padding: 10px; border-radius: 8px;
+      border: 1px solid #cfd8dc; font-size: 16px;
     }
+    dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    dialog button {
+      border: 0; border-radius: 8px; padding: 10px 14px;
+      font-weight: 700; cursor: pointer;
+    }
+    dialog .cancel { background: #eceff1; }
+    dialog .ok { background: var(--primary); color: #fff; }
   </style>
 </head>
 <body>
+  <div id="banner">
+    <span>編集モード（タップで移動 / −で削除 / ＋で追加 / 長押しで編集）</span>
+    <button type="button" id="doneBtn">完了</button>
+  </div>
   <div id="app" class="portrait">
     <div class="staff" id="staff"></div>
     <div class="party" id="party"></div>
   </div>
   <div id="log"></div>
+  <dialog id="editDialog">
+    <h3 id="dialogTitle">編集</h3>
+    <div id="dialogFields"></div>
+    <div class="actions">
+      <button type="button" class="cancel" id="dialogCancel">キャンセル</button>
+      <button type="button" class="ok" id="dialogOk">保存</button>
+    </div>
+  </dialog>
   <script>
-    const STAFF = [
-      { name: "野坂", romaji: "Nosaka" },
-      { name: "伊藤", romaji: "Ito" },
-      { name: "梁瀬", romaji: "Yanase" },
-      { name: "中原", romaji: "dismissed" },
-      { name: "坂本", romaji: "Sakamoto" },
-      { name: "合田", romaji: "gouda" },
-      { name: "その他", romaji: "Other" },
-    ];
-    const SIZES = [1, 2, 3, 4, 5, 6];
-    const partyLabel = (n) => (n >= 6 ? "6～" : String(n));
+    const STORAGE_KEY = "lightpath_reception_layout_v1";
+    const uid = () => crypto.randomUUID();
+
+    function defaultLayout() {
+      return {
+        main: [
+          { type: "person", id: "p-nosaka", name: "野坂", romaji: "Nosaka", role: "Normal", deleteLocked: false },
+          { type: "person", id: "p-ito", name: "伊藤", romaji: "Ito", role: "Normal", deleteLocked: false },
+          { type: "person", id: "p-yanase", name: "梁瀬", romaji: "Yanase", role: "Yanase", deleteLocked: true },
+          { type: "person", id: "p-nakahara", name: "中原", romaji: "dismissed", role: "Nakahara", deleteLocked: true },
+          { type: "person", id: "p-sakamoto", name: "坂本", romaji: "Sakamoto", role: "Normal", deleteLocked: false },
+          { type: "person", id: "p-gouda", name: "合田", romaji: "gouda", role: "Normal", deleteLocked: false },
+          { type: "person", id: "p-other", name: "その他", romaji: "Other", role: "Normal", deleteLocked: false },
+          { type: "clock", id: "clock", deleteLocked: true },
+        ],
+        party: [1,2,3,4,5,6].map((n) => ({
+          id: `party-${n}`, value: n, label: n >= 6 ? "6～" : String(n),
+        })),
+      };
+    }
+
+    function loadLayout() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultLayout();
+        const parsed = JSON.parse(raw);
+        if (!parsed.main || !parsed.party) return defaultLayout();
+        return parsed;
+      } catch {
+        return defaultLayout();
+      }
+    }
+
+    function saveLayout() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
+    }
+
+    let layout = loadLayout();
+    let editMode = false;
+    let movingMainId = null;
+    let movingPartyId = null;
     let selectedStaff = null;
     let selectedSize = null;
     let submitting = false;
+    let dialogMode = null;
+    let dialogTargetId = null;
+    let longPressTimer = null;
 
     const app = document.getElementById("app");
     const staffEl = document.getElementById("staff");
     const partyEl = document.getElementById("party");
     const logEl = document.getElementById("log");
+    const banner = document.getElementById("banner");
+    const dialog = document.getElementById("editDialog");
+    const dialogTitle = document.getElementById("dialogTitle");
+    const dialogFields = document.getElementById("dialogFields");
 
     function isLandscape() {
-      if (window.matchMedia) {
-        return window.matchMedia("(orientation: landscape)").matches;
-      }
-      return window.innerWidth > window.innerHeight;
+      return window.matchMedia && window.matchMedia("(orientation: landscape)").matches
+        ? true
+        : window.innerWidth > window.innerHeight;
     }
-
-    function layout() {
+    function layoutOrient() {
       app.className = isLandscape() ? "landscape" : "portrait";
     }
-    window.addEventListener("resize", layout);
-    window.addEventListener("orientationchange", () => {
-      // 回転直後のサイズ確定を待つ
-      setTimeout(layout, 50);
-      setTimeout(layout, 250);
-    });
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", layout);
-    }
-    layout();
+    window.addEventListener("resize", layoutOrient);
+    window.addEventListener("orientationchange", () => setTimeout(layoutOrient, 100));
+    layoutOrient();
 
     function showLog(text) {
       logEl.textContent = text;
@@ -230,82 +227,160 @@
       setTimeout(() => logEl.classList.remove("show"), 2500);
     }
 
+    function setEditMode(on) {
+      editMode = on;
+      movingMainId = null;
+      movingPartyId = null;
+      selectedStaff = null;
+      selectedSize = null;
+      document.body.classList.toggle("editing", on);
+      banner.classList.toggle("show", on);
+      render(null);
+    }
+
+    document.getElementById("doneBtn").onclick = () => setEditMode(false);
+
     function paintClock() {
-      const now = new Date();
       const dateEl = document.getElementById("clock-date");
       const timeEl = document.getElementById("clock-time");
       if (!dateEl || !timeEl) return;
-      dateEl.textContent = now.toLocaleDateString("ja-JP", {
-        month: "numeric",
-        day: "numeric",
-        weekday: "short",
-      });
+      const now = new Date();
+      dateEl.textContent = editMode
+        ? "長押しで完了"
+        : now.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric", weekday: "short" });
       timeEl.textContent = now.toLocaleTimeString("ja-JP", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
       });
     }
     setInterval(paintClock, 1000);
 
-    function render(flash) {
-      staffEl.innerHTML = "";
-      STAFF.forEach(({ name, romaji }) => {
-        const b = document.createElement("button");
-        b.className = "choice staff";
-        b.type = "button";
-        let title = name;
-        let sub = romaji;
-        let specialClass = "";
-        if (selectedStaff === name && !flash) {
-          if (name === "中原") {
-            title = "クビ";
-            sub = "中原";
-            specialClass = "kubi";
-          } else if (name === "梁瀬") {
-            title = "おかえりなさい";
-            sub = "梁瀬";
-            specialClass = "okaeri";
-          }
+    function bindLongPress(el, onLong, onClick) {
+      const start = (e) => {
+        if (e.type === "mousedown" && e.button !== 0) return;
+        longPressTimer = setTimeout(() => {
+          longPressTimer = null;
+          onLong();
+        }, 550);
+      };
+      const cancel = () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
         }
-        b.innerHTML = `<span>${title}</span><span class="romaji">${sub}</span>`;
-        b.disabled = submitting;
-        if (selectedStaff === name) {
-          b.classList.add("selected");
-          if (specialClass) b.classList.add(specialClass);
-          if (flash === "success") b.classList.add("success");
-          if (flash === "error") b.classList.add("error");
+      };
+      const end = () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+          onClick();
         }
-        b.onclick = () => onStaff(name);
-        staffEl.appendChild(b);
-      });
-      const clock = document.createElement("div");
-      clock.className = "clock-popout";
-      clock.id = "clock-popout";
-      clock.innerHTML = `<span class="date" id="clock-date"></span><span class="time" id="clock-time"></span>`;
-      staffEl.appendChild(clock);
-      paintClock();
-
-      partyEl.innerHTML = "";
-      SIZES.forEach((n) => {
-        const b = document.createElement("button");
-        b.className = "choice";
-        b.type = "button";
-        b.textContent = partyLabel(n);
-        b.disabled = submitting;
-        if (selectedSize === n) {
-          b.classList.add("selected");
-          if (flash === "success") b.classList.add("success");
-          if (flash === "error") b.classList.add("error");
-        }
-        b.onclick = () => onSize(n);
-        partyEl.appendChild(b);
-      });
+      };
+      el.addEventListener("mousedown", start);
+      el.addEventListener("touchstart", start, { passive: true });
+      el.addEventListener("mouseup", end);
+      el.addEventListener("mouseleave", cancel);
+      el.addEventListener("touchend", end);
+      el.addEventListener("touchcancel", cancel);
     }
 
+    function moveMain(fromId, toId) {
+      if (fromId === toId) { movingMainId = null; render(null); return; }
+      const a = layout.main.findIndex((c) => c.id === fromId);
+      const b = layout.main.findIndex((c) => c.id === toId);
+      if (a < 0 || b < 0) return;
+      const tmp = layout.main[a];
+      layout.main[a] = layout.main[b];
+      layout.main[b] = tmp;
+      movingMainId = null;
+      saveLayout();
+      render(null);
+    }
+
+    function moveParty(fromId, toId) {
+      if (fromId === toId) { movingPartyId = null; render(null); return; }
+      const a = layout.party.findIndex((c) => c.id === fromId);
+      const b = layout.party.findIndex((c) => c.id === toId);
+      if (a < 0 || b < 0) return;
+      const tmp = layout.party[a];
+      layout.party[a] = layout.party[b];
+      layout.party[b] = tmp;
+      movingPartyId = null;
+      saveLayout();
+      render(null);
+    }
+
+    function openPersonDialog(mode, cell) {
+      dialogMode = mode;
+      dialogTargetId = cell ? cell.id : null;
+      dialogTitle.textContent = mode === "addPerson" ? "担当者を追加" : "担当者を編集";
+      dialogFields.innerHTML = `
+        <label>名前</label><input id="fName" value="${cell && cell.name ? cell.name : ""}" />
+        <label>ローマ字</label><input id="fRomaji" value="${cell && cell.romaji ? cell.romaji : ""}" />
+      `;
+      dialog.showModal();
+    }
+
+    function openPartyDialog(mode, cell) {
+      dialogMode = mode;
+      dialogTargetId = cell ? cell.id : null;
+      dialogTitle.textContent = mode === "addParty" ? "人数を追加" : "人数を編集";
+      dialogFields.innerHTML = `
+        <label>表示（例: 6～）</label><input id="fLabel" value="${cell ? cell.label : "1"}" />
+        <label>送信する人数 1〜6</label><input id="fValue" value="${cell ? cell.value : 1}" />
+      `;
+      dialog.showModal();
+    }
+
+    document.getElementById("dialogCancel").onclick = () => {
+      dialog.close();
+      dialogMode = null;
+      dialogTargetId = null;
+    };
+    document.getElementById("dialogOk").onclick = () => {
+      if (dialogMode === "editPerson" || dialogMode === "addPerson") {
+        const name = document.getElementById("fName").value.trim();
+        const romaji = document.getElementById("fRomaji").value.trim();
+        if (!name) return;
+        if (dialogMode === "addPerson") {
+          const person = {
+            type: "person", id: uid(), name, romaji: romaji || name,
+            role: "Normal", deleteLocked: false,
+          };
+          const emptyIdx = dialogTargetId
+            ? layout.main.findIndex((c) => c.id === dialogTargetId && c.type === "empty")
+            : layout.main.findIndex((c) => c.type === "empty");
+          if (emptyIdx >= 0) layout.main[emptyIdx] = person;
+          else layout.main.push(person);
+        } else {
+          const idx = layout.main.findIndex((c) => c.id === dialogTargetId);
+          if (idx >= 0 && layout.main[idx].type === "person") {
+            layout.main[idx] = { ...layout.main[idx], name, romaji: romaji || name };
+          }
+        }
+      }
+      if (dialogMode === "editParty" || dialogMode === "addParty") {
+        let value = parseInt(document.getElementById("fValue").value, 10);
+        if (!Number.isInteger(value)) return;
+        value = Math.min(6, Math.max(1, value));
+        let label = document.getElementById("fLabel").value.trim();
+        if (!label) label = value >= 6 ? "6～" : String(value);
+        if (dialogMode === "addParty") {
+          layout.party.push({ id: uid(), value, label });
+        } else {
+          const idx = layout.party.findIndex((c) => c.id === dialogTargetId);
+          if (idx >= 0) layout.party[idx] = { ...layout.party[idx], value, label };
+        }
+      }
+      saveLayout();
+      dialog.close();
+      dialogMode = null;
+      dialogTargetId = null;
+      movingMainId = null;
+      render(null);
+    };
+
     async function trySubmit() {
-      if (!selectedStaff || selectedSize == null || submitting) return;
+      if (editMode || !selectedStaff || selectedSize == null || submitting) return;
       submitting = true;
       render(null);
       try {
@@ -329,15 +404,169 @@
       render(null);
     }
 
-    function onStaff(name) {
-      selectedStaff = name;
-      render(null);
-      trySubmit();
-    }
-    function onSize(n) {
-      selectedSize = n;
-      render(null);
-      trySubmit();
+    function render(flash) {
+      staffEl.innerHTML = "";
+      layout.main.forEach((cell) => {
+        const wrap = document.createElement("div");
+        wrap.className = "cell";
+
+        if (cell.type === "clock") {
+          const clock = document.createElement("div");
+          clock.className = "clock-popout" + (movingMainId === cell.id ? " moving" : "");
+          clock.innerHTML = `<span class="date" id="clock-date"></span><span class="time" id="clock-time"></span>`;
+          bindLongPress(
+            clock,
+            () => setEditMode(!editMode),
+            () => {
+              if (!editMode) return;
+              if (!movingMainId) movingMainId = cell.id;
+              else moveMain(movingMainId, cell.id);
+            },
+          );
+          wrap.appendChild(clock);
+          staffEl.appendChild(wrap);
+          paintClock();
+          return;
+        }
+
+        if (cell.type === "empty") {
+          const plus = document.createElement("button");
+          plus.type = "button";
+          plus.className = "plus" + (movingMainId === cell.id ? " moving" : "");
+          plus.textContent = editMode ? "＋" : "";
+          plus.style.visibility = editMode ? "visible" : "hidden";
+          plus.onclick = () => {
+            if (!editMode) return;
+            if (movingMainId) moveMain(movingMainId, cell.id);
+            else {
+              dialogTargetId = cell.id;
+              openPersonDialog("addPerson", null);
+            }
+          };
+          wrap.appendChild(plus);
+          staffEl.appendChild(wrap);
+          return;
+        }
+
+        // person
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "choice staff";
+        let title = cell.name;
+        let sub = cell.romaji;
+        let special = "";
+        const selected = !editMode && selectedStaff === cell.name;
+        if (selected && !flash) {
+          if (cell.role === "Nakahara") { title = "クビ"; sub = cell.name; special = "kubi"; }
+          if (cell.role === "Yanase") { title = "おかえりなさい"; sub = cell.name; special = "okaeri"; }
+        }
+        b.innerHTML = `<span>${title}</span><span class="romaji">${sub || ""}</span>`;
+        if (selected) {
+          b.classList.add("selected");
+          if (special) b.classList.add(special);
+          if (flash === "success") b.classList.add("success");
+          if (flash === "error") b.classList.add("error");
+        }
+        if (movingMainId === cell.id) b.classList.add("moving");
+        b.disabled = submitting && !editMode;
+        bindLongPress(
+          b,
+          () => {
+            if (editMode) openPersonDialog("editPerson", cell);
+          },
+          () => {
+            if (editMode) {
+              if (!movingMainId) { movingMainId = cell.id; render(null); }
+              else moveMain(movingMainId, cell.id);
+            } else {
+              selectedStaff = cell.name;
+              render(null);
+              trySubmit();
+            }
+          },
+        );
+        wrap.appendChild(b);
+        if (editMode && !cell.deleteLocked) {
+          const minus = document.createElement("button");
+          minus.type = "button";
+          minus.className = "minus";
+          minus.textContent = "−";
+          minus.onclick = (e) => {
+            e.stopPropagation();
+            const idx = layout.main.findIndex((c) => c.id === cell.id);
+            if (idx >= 0) {
+              layout.main[idx] = { type: "empty", id: uid(), deleteLocked: false };
+              if (movingMainId === cell.id) movingMainId = null;
+              saveLayout();
+              render(null);
+            }
+          };
+          wrap.appendChild(minus);
+        }
+        staffEl.appendChild(wrap);
+      });
+
+      partyEl.innerHTML = "";
+      layout.party.forEach((cell) => {
+        const wrap = document.createElement("div");
+        wrap.className = "cell";
+        wrap.style.flex = "1";
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "choice";
+        b.textContent = cell.label;
+        if (!editMode && selectedSize === cell.value) {
+          b.classList.add("selected");
+          if (flash === "success") b.classList.add("success");
+          if (flash === "error") b.classList.add("error");
+        }
+        if (movingPartyId === cell.id) b.classList.add("moving");
+        b.disabled = submitting && !editMode;
+        bindLongPress(
+          b,
+          () => { if (editMode) openPartyDialog("editParty", cell); },
+          () => {
+            if (editMode) {
+              if (!movingPartyId) { movingPartyId = cell.id; render(null); }
+              else moveParty(movingPartyId, cell.id);
+            } else {
+              selectedSize = cell.value;
+              render(null);
+              trySubmit();
+            }
+          },
+        );
+        wrap.appendChild(b);
+        if (editMode) {
+          const minus = document.createElement("button");
+          minus.type = "button";
+          minus.className = "minus";
+          minus.textContent = "−";
+          minus.onclick = (e) => {
+            e.stopPropagation();
+            if (layout.party.length <= 1) return;
+            layout.party = layout.party.filter((c) => c.id !== cell.id);
+            if (movingPartyId === cell.id) movingPartyId = null;
+            saveLayout();
+            render(null);
+          };
+          wrap.appendChild(minus);
+        }
+        partyEl.appendChild(wrap);
+      });
+
+      if (editMode) {
+        const wrap = document.createElement("div");
+        wrap.className = "cell";
+        wrap.style.flex = "0.7";
+        const plus = document.createElement("button");
+        plus.type = "button";
+        plus.className = "plus";
+        plus.textContent = "＋";
+        plus.onclick = () => openPartyDialog("addParty", null);
+        wrap.appendChild(plus);
+        partyEl.appendChild(wrap);
+      }
     }
 
     render(null);

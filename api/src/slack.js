@@ -21,6 +21,7 @@ export function formatAcceptedAt(iso) {
  * @returns {string}
  */
 export function buildSlackMessage({ staffName, partySize, acceptedAt }) {
+  // 表示名が変わっても、既定の氏名なら専用メッセージを送る
   if (staffName === '中原') {
     return [`お前はクビだ！`, `@中原 ${partySize}名`].join('\n');
   }

@@ -52,14 +52,24 @@ describe('POST /receptions validation', () => {
     assert.equal(res.status, 400);
   });
 
-  it('rejects unknown staffName', async () => {
+  it('rejects empty staffName', async () => {
+    const app = createApp({ notify: async () => true });
+    const res = await request(app, 'POST', '/receptions', {
+      staffName: '   ',
+      partySize: 2,
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.json.error, 'invalid_staffName');
+  });
+
+  it('accepts custom staffName from layout editor', async () => {
     const app = createApp({ notify: async () => true });
     const res = await request(app, 'POST', '/receptions', {
       staffName: '山田',
       partySize: 2,
     });
-    assert.equal(res.status, 400);
-    assert.equal(res.json.error, 'invalid_staffName');
+    assert.equal(res.status, 201);
+    assert.equal(res.json.staffName, '山田');
   });
 
   it('rejects partySize 0', async () => {
