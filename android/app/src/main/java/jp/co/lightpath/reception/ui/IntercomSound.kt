@@ -9,6 +9,7 @@ import jp.co.lightpath.reception.R
  * Reception success chimes.
  * Default: Intercom01 Ding Dong Close.
  * Nakahara (クビ): Explosion01 Short.
+ * Yanase (おかえりなさい): Onoma-Sparkle03 Short.
  */
 class IntercomSound(context: Context) {
     private val appContext = context.applicationContext
@@ -24,6 +25,7 @@ class IntercomSound(context: Context) {
 
     private var intercomId: Int = 0
     private var explosionId: Int = 0
+    private var sparkleId: Int = 0
     private val loaded = mutableSetOf<Int>()
 
     init {
@@ -34,10 +36,15 @@ class IntercomSound(context: Context) {
         }
         intercomId = soundPool.load(appContext, R.raw.intercom, 1)
         explosionId = soundPool.load(appContext, R.raw.explosion, 1)
+        sparkleId = soundPool.load(appContext, R.raw.sparkle, 1)
     }
 
-    fun play(nakahara: Boolean = false) {
-        val id = if (nakahara) explosionId else intercomId
+    fun play(special: SpecialSelect = SpecialSelect.None) {
+        val id = when (special) {
+            SpecialSelect.Fired -> explosionId
+            SpecialSelect.Welcome -> sparkleId
+            SpecialSelect.None -> intercomId
+        }
         if (id == 0 || id !in loaded) return
         soundPool.play(id, 1f, 1f, 1, 0, 1f)
     }

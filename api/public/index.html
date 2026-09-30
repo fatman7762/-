@@ -390,10 +390,12 @@
       render(null);
     };
 
-    const intercomAudio = new Audio("/intercom.mp3");
-    const explosionAudio = new Audio("/explosion.mp3");
-    intercomAudio.preload = "auto";
-    explosionAudio.preload = "auto";
+    const chimeAudios = {
+      "": { audio: new Audio("/intercom.mp3"), fallback: "/intercom.wav" },
+      kubi: { audio: new Audio("/explosion.mp3"), fallback: "/explosion.wav" },
+      okaeri: { audio: new Audio("/sparkle.mp3"), fallback: "/sparkle.wav" },
+    };
+    Object.values(chimeAudios).forEach(({ audio }) => { audio.preload = "auto"; });
     // Unlock audio on first tap (browser autoplay policy)
     function unlockAudio(audio) {
       audio.play().then(() => {
@@ -402,20 +404,18 @@
       }).catch(() => {});
     }
     function unlockIntercom() {
-      unlockAudio(intercomAudio);
-      unlockAudio(explosionAudio);
+      Object.values(chimeAudios).forEach(({ audio }) => unlockAudio(audio));
       document.removeEventListener("pointerdown", unlockIntercom);
     }
     document.addEventListener("pointerdown", unlockIntercom, { once: true });
     function playChime(kind) {
-      const audio = kind === "kubi" ? explosionAudio : intercomAudio;
-      const fallback = kind === "kubi" ? "/explosion.wav" : "/intercom.wav";
+      const entry = chimeAudios[kind] || chimeAudios[""];
       try {
-        audio.currentTime = 0;
-        const p = audio.play();
+        entry.audio.currentTime = 0;
+        const p = entry.audio.play();
         if (p && p.catch) p.catch(() => {
-          audio.src = fallback;
-          audio.play().catch(() => {});
+          entry.audio.src = entry.fallback;
+          entry.audio.play().catch(() => {});
         });
       } catch (_) {}
     }
