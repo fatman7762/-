@@ -27,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,6 +116,10 @@ private sealed class EditDialog {
 fun ReceptionScreen(api: ReceptionApi) {
     val context = LocalContext.current
     val store = remember { LayoutStore(context) }
+    val intercom = remember { IntercomSound(context) }
+    DisposableEffect(Unit) {
+        onDispose { intercom.release() }
+    }
     var layout by remember { mutableStateOf(store.load()) }
     var editMode by rememberSaveable { mutableStateOf(false) }
     var movingMainId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -126,6 +131,17 @@ fun ReceptionScreen(api: ReceptionApi) {
     var flash by rememberSaveable { mutableStateOf(FlashKind.None) }
     var submitting by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    val selectedStaffSpecial = remember(selectedStaff, layout) {
+        val person = layout.mainCells
+            .filterIsInstance<MainCell.Person>()
+            .firstOrNull { it.name == selectedStaff }
+        when (person?.role) {
+            StaffRole.Nakahara -> SpecialSelect.Fired
+            StaffRole.Yanase -> SpecialSelect.Welcome
+            else -> SpecialSelect.None
+        }
+    }
 
     fun persist(next: ReceptionLayout) {
         layout = next
@@ -146,7 +162,12 @@ fun ReceptionScreen(api: ReceptionApi) {
                     api.createReception(staff, size)
                 }
             }
-            flash = if (result.isSuccess) FlashKind.Success else FlashKind.Error
+            if (result.isSuccess) {
+                flash = FlashKind.Success
+                intercom.play()
+            } else {
+                flash = FlashKind.Error
+            }
             delay(700)
             flash = FlashKind.None
             clearSelection()
@@ -313,6 +334,7 @@ fun ReceptionScreen(api: ReceptionApi) {
                         vertical = true,
                         selected = selectedPartySize,
                         flash = flash,
+                        staffSpecial = selectedStaffSpecial,
                         editMode = editMode,
                         movingId = movingPartyId,
                         enabled = !submitting,
@@ -402,6 +424,7 @@ fun ReceptionScreen(api: ReceptionApi) {
                         vertical = false,
                         selected = selectedPartySize,
                         flash = flash,
+                        staffSpecial = selectedStaffSpecial,
                         editMode = editMode,
                         movingId = movingPartyId,
                         enabled = !submitting,
@@ -609,6 +632,7 @@ private fun PartyStrip(
     vertical: Boolean,
     selected: Int?,
     flash: FlashKind,
+    staffSpecial: SpecialSelect,
     editMode: Boolean,
     movingId: String?,
     enabled: Boolean,
@@ -620,6 +644,7 @@ private fun PartyStrip(
     onAdd: () -> Unit,
 ) {
     val arrangement = Arrangement.spacedBy(scale.gap)
+    val partyFlash = if (staffSpecial == SpecialSelect.None) flash else FlashKind.None
     if (vertical) {
         Column(modifier = modifier, verticalArrangement = arrangement) {
             cells.forEachIndexed { index, cell ->
@@ -631,8 +656,9 @@ private fun PartyStrip(
                     ChoiceButton(
                         label = cell.label,
                         selected = (!editMode && selected == cell.value) || movingId == cell.id,
-                        flash = flash,
+                        flash = partyFlash,
                         enabled = enabled || editMode,
+                        specialSelect = if (!editMode && selected == cell.value) staffSpecial else SpecialSelect.None,
                         moving = movingId == cell.id,
                         labelSize = scale.party,
                         modifier = Modifier.fillMaxSize(),
@@ -669,8 +695,9 @@ private fun PartyStrip(
                     ChoiceButton(
                         label = cell.label,
                         selected = (!editMode && selected == cell.value) || movingId == cell.id,
-                        flash = flash,
+                        flash = partyFlash,
                         enabled = enabled || editMode,
+                        specialSelect = if (!editMode && selected == cell.value) staffSpecial else SpecialSelect.None,
                         moving = movingId == cell.id,
                         labelSize = scale.party,
                         modifier = Modifier.fillMaxSize(),

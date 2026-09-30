@@ -390,6 +390,39 @@
       render(null);
     };
 
+    const intercomAudio = new Audio("/intercom.mp3");
+    intercomAudio.preload = "auto";
+    // Unlock audio on first tap (browser autoplay policy)
+    function unlockIntercom() {
+      intercomAudio.play().then(() => {
+        intercomAudio.pause();
+        intercomAudio.currentTime = 0;
+      }).catch(() => {});
+      document.removeEventListener("pointerdown", unlockIntercom);
+    }
+    document.addEventListener("pointerdown", unlockIntercom, { once: true });
+    function playIntercom() {
+      try {
+        intercomAudio.currentTime = 0;
+        const p = intercomAudio.play();
+        if (p && p.catch) p.catch(() => {
+          // mp3 failed — try wav fallback once
+          intercomAudio.src = "/intercom.wav";
+          intercomAudio.play().catch(() => {});
+        });
+      } catch (_) {}
+    }
+
+    function selectedStaffSpecial() {
+      const person = layout.main.find(
+        (c) => c.type === "person" && c.name === selectedStaff
+      );
+      if (!person) return "";
+      if (person.role === "Nakahara") return "kubi";
+      if (person.role === "Yanase") return "okaeri";
+      return "";
+    }
+
     async function trySubmit() {
       if (editMode || !selectedStaff || selectedSize == null || submitting) return;
       submitting = true;
@@ -402,6 +435,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || res.statusText);
+        playIntercom();
         render("success");
         showLog(`受付完了: ${data.staffName} / ${data.partySize}名`);
       } catch (e) {
@@ -532,8 +566,13 @@
         b.textContent = cell.label;
         if (!editMode && selectedSize === cell.value) {
           b.classList.add("selected");
-          if (flash === "success") b.classList.add("success");
-          if (flash === "error") b.classList.add("error");
+          const special = selectedStaffSpecial();
+          if (special) {
+            b.classList.add(special);
+          } else {
+            if (flash === "success") b.classList.add("success");
+            if (flash === "error") b.classList.add("error");
+          }
         }
         if (movingPartyId === cell.id) b.classList.add("moving");
         b.disabled = submitting && !editMode;
