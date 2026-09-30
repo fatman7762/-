@@ -51,7 +51,7 @@ fun defaultReceptionLayout(): ReceptionLayout {
         MainCell.Person(
             id = "p-yanase",
             name = "梁瀬",
-            romaji = "Yanase",
+            romaji = "VTuber",
             role = StaffRole.Yanase,
             deleteLocked = true,
         ),
@@ -184,7 +184,7 @@ private fun ensureLockedCells(layout: ReceptionLayout): ReceptionLayout {
             MainCell.Person(
                 id = "p-yanase",
                 name = "梁瀬",
-                romaji = "Yanase",
+                romaji = "VTuber",
                 role = StaffRole.Yanase,
                 deleteLocked = true,
             ),
@@ -201,14 +201,14 @@ private fun ensureLockedCells(layout: ReceptionLayout): ReceptionLayout {
             ),
         )
     }
-    // Force deleteLocked on special roles
+    // Force deleteLocked on special roles; keep 梁瀬 romaji as VTuber
     main = main.map { cell ->
         when (cell) {
             is MainCell.Person ->
-                if (cell.role == StaffRole.Yanase || cell.role == StaffRole.Nakahara) {
-                    cell.copy(deleteLocked = true)
-                } else {
-                    cell
+                when (cell.role) {
+                    StaffRole.Yanase -> cell.copy(deleteLocked = true, romaji = "VTuber")
+                    StaffRole.Nakahara -> cell.copy(deleteLocked = true)
+                    else -> cell
                 }
             is MainCell.Clock -> cell.copy(deleteLocked = true)
             else -> cell

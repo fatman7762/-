@@ -160,7 +160,7 @@
         main: [
           { type: "person", id: "p-nosaka", name: "野坂", romaji: "Nosaka", role: "Normal", deleteLocked: false },
           { type: "person", id: "p-ito", name: "伊藤", romaji: "Ito", role: "Normal", deleteLocked: false },
-          { type: "person", id: "p-yanase", name: "梁瀬", romaji: "Yanase", role: "Yanase", deleteLocked: true },
+          { type: "person", id: "p-yanase", name: "梁瀬", romaji: "VTuber", role: "Yanase", deleteLocked: true },
           { type: "person", id: "p-nakahara", name: "中原", romaji: "dismissed", role: "Nakahara", deleteLocked: true },
           { type: "person", id: "p-sakamoto", name: "坂本", romaji: "Sakamoto", role: "Normal", deleteLocked: false },
           { type: "person", id: "p-gouda", name: "合田", romaji: "gouda", role: "Normal", deleteLocked: false },
@@ -179,6 +179,11 @@
         if (!raw) return defaultLayout();
         const parsed = JSON.parse(raw);
         if (!parsed.main || !parsed.party) return defaultLayout();
+        parsed.main = parsed.main.map((cell) =>
+          cell.type === "person" && cell.role === "Yanase"
+            ? { ...cell, romaji: "VTuber", deleteLocked: true }
+            : cell
+        );
         return parsed;
       } catch {
         return defaultLayout();
