@@ -57,7 +57,7 @@ private val STAFF = listOf(
     StaffOption("梁瀬", "Yanase"),
     StaffOption("中原", "dismissed"),
     StaffOption("坂本", "Sakamoto"),
-    StaffOption("合田", "Aida"),
+    StaffOption("合田", "gouda"),
     StaffOption("その他", "Other"),
 )
 private val PARTY_SIZES = (1..6).toList()

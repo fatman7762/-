@@ -13,7 +13,7 @@
 
 ### 操作（2回押しで成立）
 
-1. 担当者（野坂 Nosaka / 伊藤 Ito / 梁瀬 Yanase / 中原 dismissed / 坂本 Sakamoto / 合田 Aida / その他 Other）を押す  
+1. 担当者（野坂 Nosaka / 伊藤 Ito / 梁瀬 Yanase / 中原 dismissed / 坂本 Sakamoto / 合田 gouda / その他 Other）を押す  
 2. 人数（1〜5 / 6～）を押す  
 → その瞬間に API へ送信。選択は短いフラッシュ後に解除され、次の来客待ちへ戻ります。名前は大きめ表示、下にローマ字を小さく併記します。その他の横の空きには現在時刻のポップアウトを表示します。
 
