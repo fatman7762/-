@@ -230,12 +230,16 @@ private fun StaffGrid(
                 horizontalArrangement = Arrangement.spacedBy(scale.gap),
             ) {
                 rowItems.forEach { staff ->
+                    val isSelected = selected == staff.name
+                    // 中原だけ選んだときは赤く「クビ」表示（ギャグ）
+                    val showKubi = staff.name == "中原" && isSelected && flash == FlashKind.None
                     ChoiceButton(
-                        label = staff.name,
-                        subtitle = staff.romaji,
-                        selected = selected == staff.name,
+                        label = if (showKubi) "クビ" else staff.name,
+                        subtitle = if (showKubi) "中原" else staff.romaji,
+                        selected = isSelected,
                         flash = flash,
                         enabled = enabled,
+                        dangerSelected = showKubi,
                         labelSize = scale.staffName,
                         subtitleSize = scale.staffRomaji,
                         modifier = Modifier
@@ -388,6 +392,7 @@ private fun ChoiceButton(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     subtitleSize: TextUnit = 14.sp,
+    dangerSelected: Boolean = false,
     onClick: () -> Unit,
 ) {
     val labelStyle = MaterialTheme.typography.headlineMedium.copy(
@@ -428,20 +433,20 @@ private fun ChoiceButton(
     }
 
     if (selected) {
-        val colors = when (flash) {
-            FlashKind.Success -> ButtonDefaults.buttonColors(
+        val colors = when {
+            flash == FlashKind.Success -> ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.tertiary,
                 contentColor = MaterialTheme.colorScheme.onTertiary,
                 disabledContainerColor = MaterialTheme.colorScheme.tertiary,
                 disabledContentColor = MaterialTheme.colorScheme.onTertiary,
             )
-            FlashKind.Error -> ButtonDefaults.buttonColors(
+            flash == FlashKind.Error || dangerSelected -> ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.error,
                 contentColor = MaterialTheme.colorScheme.onError,
                 disabledContainerColor = MaterialTheme.colorScheme.error,
                 disabledContentColor = MaterialTheme.colorScheme.onError,
             )
-            FlashKind.None -> ButtonDefaults.buttonColors(
+            else -> ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             )

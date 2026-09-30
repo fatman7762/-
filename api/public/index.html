@@ -94,6 +94,10 @@
       background: var(--primary);
       color: var(--on-primary);
     }
+    button.choice.selected.kubi {
+      background: var(--error);
+      color: #fff;
+    }
     button.choice.success {
       background: var(--success);
       color: #fff;
@@ -247,10 +251,14 @@
         const b = document.createElement("button");
         b.className = "choice staff";
         b.type = "button";
-        b.innerHTML = `<span>${name}</span><span class="romaji">${romaji}</span>`;
+        const showKubi = name === "中原" && selectedStaff === name && !flash;
+        const title = showKubi ? "クビ" : name;
+        const sub = showKubi ? "中原" : romaji;
+        b.innerHTML = `<span>${title}</span><span class="romaji">${sub}</span>`;
         b.disabled = submitting;
         if (selectedStaff === name) {
           b.classList.add("selected");
+          if (showKubi) b.classList.add("kubi");
           if (flash === "success") b.classList.add("success");
           if (flash === "error") b.classList.add("error");
         }
