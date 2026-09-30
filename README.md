@@ -56,19 +56,25 @@
 cd api
 cp .env.example .env   # Slack Webhook 等を記入
 npm install
-npm start              # 既定ポート 8081
+npm start              # 既定ポート 43123
 ```
 
 ヘルスチェック:
 
 ```bash
-curl http://127.0.0.1:8081/health
+curl http://127.0.0.1:43123/health
 ```
 
 ブラウザで操作テスト（Android と同じ 2 タップ UI）:
 
 ```text
-http://127.0.0.1:8081/
+http://127.0.0.1:43123/
+```
+
+表示がおかしいときはレイアウトを初期化:
+
+```text
+http://127.0.0.1:43123/?reset=1
 ```
 
 自動テスト:

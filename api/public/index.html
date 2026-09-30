@@ -175,10 +175,16 @@
 
     function loadLayout() {
       try {
+        const params = new URLSearchParams(location.search);
+        if (params.get("reset") === "1") {
+          localStorage.removeItem(STORAGE_KEY);
+        }
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return defaultLayout();
         const parsed = JSON.parse(raw);
-        if (!parsed.main || !parsed.party) return defaultLayout();
+        if (!Array.isArray(parsed.main) || !Array.isArray(parsed.party) || parsed.main.length === 0) {
+          return defaultLayout();
+        }
         parsed.main = parsed.main.map((cell) =>
           cell.type === "person" && cell.role === "Yanase"
             ? { ...cell, romaji: "VTuber", deleteLocked: true }
